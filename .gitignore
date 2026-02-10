@@ -1,0 +1,66 @@
+# ----------------------------------------------------------------------------
+# SECRET FILES
+# ----------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.secret
+backend/.env
+
+# ----------------------------------------------------------------------------
+# BACKEND (GO / GOLANG)
+# ----------------------------------------------------------------------------
+bin/
+main
+backend/main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.txt
+
+# Vendor directory (if you use go mod vendor)
+# vendor/
+
+# ----------------------------------------------------------------------------
+# FLUTTER / DART
+# ----------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+android/**/generated/
+android/key.properties
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# ----------------------------------------------------------------------------
+# WEB (NEXT.JS)
+# ----------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+dist/
+.eslintcache
+
+# ----------------------------------------------------------------------------
+# IDE / EDITOR & OPERATING SYSTEM FILES
+# ----------------------------------------------------------------------------
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------------------------------------------
+# SUPABASE / DOCKER
+# ----------------------------------------------------------------------------
+supabase/.temp/
+docker-compose.override.yml
