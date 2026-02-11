@@ -9,13 +9,18 @@ import 'package:pmf_app/presentation/features/auth/login_screen.dart';
 import 'package:pmf_app/presentation/features/auth/register_screen.dart';
 import 'package:pmf_app/presentation/features/auth/forgot_password_screen.dart';
 import 'package:pmf_app/presentation/features/auth/reset_password_screen.dart';
-import 'package:pmf_app/presentation/features/intro/intro_screen.dart';
 import 'package:pmf_app/presentation/features/setup/setup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:pmf_app/data/repositories/auth_repository.dart';
 import 'package:pmf_app/data/repositories/setup_repository.dart';
+import 'package:pmf_app/data/repositories/budget_repository.dart';
+import 'package:pmf_app/data/repositories/transaction_repository.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
 import 'package:pmf_app/bloc/setup_bloc/setup_bloc.dart';
+import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
+import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
+import 'package:pmf_app/presentation/features/budget/budget_screen.dart';
+import 'package:pmf_app/presentation/features/home/main_home_screen.dart';
 import 'package:app_links/app_links.dart';
 
 void main() async {
@@ -63,9 +68,7 @@ class _MyAppState extends State<MyApp> {
     } catch (_) {}
 
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
-      if (uri != null) {
-        _handleIncomingUri(uri);
-      }
+      _handleIncomingUri(uri);
     });
   }
 
@@ -99,6 +102,8 @@ class _MyAppState extends State<MyApp> {
       providers: [
         RepositoryProvider(create: (context) => AuthRepository()),
         RepositoryProvider(create: (context) => SetupRepository()),
+        RepositoryProvider(create: (context) => BudgetRepository()),
+        RepositoryProvider(create: (context) => TransactionRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -107,6 +112,12 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider(
             create: (context) => SetupBloc(setupRepository: context.read<SetupRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => BudgetBloc(budgetRepository: context.read<BudgetRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => TransactionBloc(transactionRepository: context.read<TransactionRepository>()),
           ),
         ],
         child: MaterialApp(
@@ -158,12 +169,14 @@ class _MyAppState extends State<MyApp> {
             '/forgot-password': (_) => const ForgotPasswordScreen(),
             '/reset-password': (_) => const ResetPasswordScreen(),
             '/setup': (_) => const SetupScreen(),
+            '/budget': (_) => const BudgetScreen(),
+            '/home': (_) => const MainHomeScreen(),
           },
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
                 if (state.hasFinishedSetup) {
-                  return const IntroScreen();
+                  return const MainHomeScreen();
                 } else {
                   return const SetupScreen();
                 }

@@ -75,9 +75,9 @@ class _SetupScreenState extends State<SetupScreen>
       body: BlocListener<SetupBloc, SetupState>(
         listener: (context, state) {
           if (state is SetupSuccess) {
-            // Assuming you have a main dashboard route named '/dashboard'
+            // Navigate to budget screen after setup completion
             Navigator.of(context)
-                .pushNamedAndRemoveUntil('/dashboard', (route) => false);
+                .pushNamedAndRemoveUntil('/budget', (route) => false);
           } else if (state is SetupFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
