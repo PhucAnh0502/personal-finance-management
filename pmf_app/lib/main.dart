@@ -10,9 +10,12 @@ import 'package:pmf_app/presentation/features/auth/register_screen.dart';
 import 'package:pmf_app/presentation/features/auth/forgot_password_screen.dart';
 import 'package:pmf_app/presentation/features/auth/reset_password_screen.dart';
 import 'package:pmf_app/presentation/features/intro/intro_screen.dart';
+import 'package:pmf_app/presentation/features/setup/setup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:pmf_app/data/repositories/auth_repository.dart';
+import 'package:pmf_app/data/repositories/setup_repository.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
+import 'package:pmf_app/bloc/setup_bloc/setup_bloc.dart';
 import 'package:app_links/app_links.dart';
 
 void main() async {
@@ -92,10 +95,20 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => AuthRepository(),
-      child: BlocProvider(
-        create: (context) => AuthBloc(context.read<AuthRepository>())..add(AuthCheckRequested()),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (context) => AuthRepository()),
+        RepositoryProvider(create: (context) => SetupRepository()),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AuthBloc(context.read<AuthRepository>())..add(AuthCheckRequested()),
+          ),
+          BlocProvider(
+            create: (context) => SetupBloc(setupRepository: context.read<SetupRepository>()),
+          ),
+        ],
         child: MaterialApp(
           navigatorKey: _navigatorKey,
           debugShowCheckedModeBanner: false,
@@ -144,16 +157,24 @@ class _MyAppState extends State<MyApp> {
             '/register': (_) => const RegisterScreen(),
             '/forgot-password': (_) => const ForgotPasswordScreen(),
             '/reset-password': (_) => const ResetPasswordScreen(),
+            '/setup': (_) => const SetupScreen(),
           },
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
-                return const IntroScreen();
+                if (state.hasFinishedSetup) {
+                  return const IntroScreen();
+                } else {
+                  return const SetupScreen();
+                }
               }
-              if(state is Unauthenticated || state is AuthFailure){
+              if (state is Unauthenticated || state is AuthFailure) {
                 return const LoginScreen();
               }
-              return const IntroScreen();
+              return const Scaffold(
+                backgroundColor: AppColors.navyDark,
+                body: Center(child: CircularProgressIndicator(color: AppColors.primaryEmerald)),
+              );
             },
           )
         ),

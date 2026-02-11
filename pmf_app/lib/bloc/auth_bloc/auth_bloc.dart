@@ -23,17 +23,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     });
 
-    on<AuthCheckRequested>((event, emit) {
+    on<AuthCheckRequested>((event, emit) async {
       final user = _repo.currentUser;
       if(user != null) {
-        emit(Authenticated(user.id));
+        final hasFinishedSetup = await _repo.hasFinishedSetup();
+        emit(Authenticated(userId: user.id, hasFinishedSetup: hasFinishedSetup));
       } else {
         emit(Unauthenticated());
       }
     });
 
-    on<AuthUserChanged>((event, emit) {
-      emit(Authenticated(event.userId));
+    on<AuthUserChanged>((event, emit) async {
+      await _repo.checkAndCreateUserProfile();
+      final hasFinishedSetup = await _repo.hasFinishedSetup();
+      emit(Authenticated(userId: event.userId, hasFinishedSetup: hasFinishedSetup));
     });
 
     on<AuthUserSignedOut>((event, emit) {
@@ -46,7 +49,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _repo.signIn(email: event.email, password: event.password);
         final user = _repo.currentUser;
         if (user != null) {
-          emit(Authenticated(user.id));
+          final hasFinishedSetup = await _repo.hasFinishedSetup();
+          emit(Authenticated(userId: user.id, hasFinishedSetup: hasFinishedSetup));
         }
       } catch (e) {
         emit(AuthFailure(e.toString()));
@@ -56,12 +60,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpSubmitted>((event, emit) async {
       emit(AuthLoading());
       try {
-        final response = await _repo.signUp(email: event.email, password: event.password);
-        final user = response.user;
-        if (user != null && response.session != null) {
-          emit(Authenticated(user.id));
+        final response =
+            await _repo.signUp(email: event.email, password: event.password);
+        final user = response.user ?? _repo.currentUser;
+        if (user != null) {
+          await _repo.checkAndCreateUserProfile();
+          final hasFinishedSetup = await _repo.hasFinishedSetup();
+          emit(Authenticated(userId: user.id, hasFinishedSetup: hasFinishedSetup));
         } else {
-          emit(AuthMessage('Please check your email to confirm your account.'));
+          emit(AuthMessage('Sign up completed. Please sign in to continue.'));
         }
       } catch (e) {
         emit(AuthFailure(e.toString()));

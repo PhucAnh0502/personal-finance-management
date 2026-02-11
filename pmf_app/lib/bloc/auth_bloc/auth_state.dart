@@ -10,9 +10,12 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 class Authenticated extends AuthState {
   final String userId;
-  Authenticated(this.userId);
+  final bool hasFinishedSetup;
+
+  Authenticated({required this.userId, required this.hasFinishedSetup});
+
   @override
-  List<Object?> get props => [userId];
+  List<Object?> get props => [userId, hasFinishedSetup];
 }
 class Unauthenticated extends AuthState {}
 class AuthFailure extends AuthState {
