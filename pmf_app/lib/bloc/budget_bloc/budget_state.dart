@@ -11,14 +11,16 @@ class BudgetLoaded extends BudgetState {
   final List<BudgetModel> budgets;
   final double totalAllocated;
   final double totalCash;
+  final double unbudgetedSpent;
 
   BudgetLoaded({
     required this.budgets,
     required this.totalAllocated,
     required this.totalCash,
+    required this.unbudgetedSpent,
   });
 
-  double get unallocatedAmount => totalCash - totalAllocated;
+  double get unallocatedAmount => totalCash - totalAllocated - unbudgetedSpent;
 }
 
 class BudgetFailure extends BudgetState {

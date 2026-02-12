@@ -31,3 +31,13 @@ class UpdateBudgetLimitEvent extends BudgetEvent {
     required this.month,
   });
 }
+
+class DeleteBudgetCategoryEvent extends BudgetEvent {
+  final String categoryId;
+  final DateTime month;
+
+  DeleteBudgetCategoryEvent({
+    required this.categoryId,
+    required this.month,
+  });
+}

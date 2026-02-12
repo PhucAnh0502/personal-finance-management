@@ -379,6 +379,11 @@ class _BudgetScreenState extends State<BudgetScreen>
                     color: AppColors.primaryEmerald,
                     onPressed: () => _showEditBudgetDialog(budget),
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    color: AppColors.expense,
+                    onPressed: () => _showDeleteBudgetDialog(budget),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -738,6 +743,94 @@ class _BudgetScreenState extends State<BudgetScreen>
                   ],
                 ),
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteBudgetDialog(BudgetModel budget) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.95),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(32),
+                topRight: Radius.circular(32),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Delete Category',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Remove ${budget.categoryName} from your budget allocations. The remaining amount will return to Unallocated.',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppColors.textSecondary.withOpacity(0.4)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<BudgetBloc>().add(
+                                DeleteBudgetCategoryEvent(
+                                  categoryId: budget.categoryId,
+                                  month: DateTime.now(),
+                                ),
+                              );
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.expense,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );

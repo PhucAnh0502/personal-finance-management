@@ -193,85 +193,217 @@ class _TransactionListScreenState extends State<TransactionListScreen>
     final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
     final isIncome = transaction.transactionType == TransactionType.income;
     
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.white.withOpacity(0.85),
-            border: Border.all(color: Colors.white.withOpacity(0.7)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    return GestureDetector(
+      onTap: () => _showTransactionDetails(transaction),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withOpacity(0.85),
+              border: Border.all(color: Colors.white.withOpacity(0.7)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isIncome 
+                        ? AppColors.primaryEmerald.withOpacity(0.1)
+                        : AppColors.expense.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                    color: isIncome ? AppColors.primaryEmerald : AppColors.expense,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.categoryName ?? 'Unknown',
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        transaction.note ?? 'No note',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateFormat.format(transaction.transactionDate),
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${isIncome ? "+" : "-"}${transaction.amount.toStringAsFixed(0)} VND',
+                  style: TextStyle(
+                    color: isIncome ? AppColors.primaryEmerald : AppColors.expense,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isIncome 
-                      ? AppColors.primaryEmerald.withOpacity(0.1)
-                      : AppColors.expense.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  isIncome ? Icons.arrow_upward : Icons.arrow_downward,
-                  color: isIncome ? AppColors.primaryEmerald : AppColors.expense,
-                  size: 24,
-                ),
+        ),
+      ),
+    );
+  }
+
+  void _showTransactionDetails(TransactionModel transaction) {
+    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+    final isIncome = transaction.transactionType == TransactionType.income;
+    final receiptUrl = transaction.imageUrl;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.96),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      transaction.categoryName ?? 'Unknown',
-                      style: const TextStyle(
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.textSecondary.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    transaction.categoryName ?? 'Transaction Details',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDetailRow('Type', isIncome ? 'Income' : 'Expense'),
+                  _buildDetailRow(
+                    'Amount',
+                    '${isIncome ? "+" : "-"}${transaction.amount.toStringAsFixed(0)} VND',
+                    valueColor: isIncome ? AppColors.primaryEmerald : AppColors.expense,
+                  ),
+                  _buildDetailRow('Date', dateFormat.format(transaction.transactionDate)),
+                  _buildDetailRow('Note', transaction.note ?? 'No note'),
+                  if (receiptUrl != null && receiptUrl.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Receipt',
+                      style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      transaction.note ?? 'No note',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dateFormat.format(transaction.transactionDate),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        receiptUrl,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 160,
+                            color: Colors.black12,
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Failed to load receipt',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
-                ),
+                  const SizedBox(height: 12),
+                ],
               ),
-              Text(
-                '${isIncome ? "+" : "-"}${transaction.amount.toStringAsFixed(0)} VND',
-                style: TextStyle(
-                  color: isIncome ? AppColors.primaryEmerald : AppColors.expense,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: valueColor ?? AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -15,6 +15,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     on<FetchBudgetsEvent>(_onFetchBudgets);
     on<AddBudgetCategoryEvent>(_onAddBudget);
     on<UpdateBudgetLimitEvent>(_onUpdateBudgetLimit);
+    on<DeleteBudgetCategoryEvent>(_onDeleteBudgetCategory);
   }
 
   Future<void> _onFetchBudgets(FetchBudgetsEvent event, emit) async {
@@ -31,13 +32,15 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       double totalCash = (accountData['balance'] as num).toDouble();
       String accountId = accountData['id'];
       
-      final budgets = await budgetRepository.getBudgetsWithSpent(event.month, accountId);
+      final summary = await budgetRepository.getBudgetsWithSpent(event.month, accountId);
 
+      final budgets = summary.budgets;
       double totalAllocated = budgets.fold(0, (sum, item) => sum + item.limitAmount);
       emit(BudgetLoaded(
         budgets: budgets,
         totalAllocated: totalAllocated,
         totalCash: totalCash,
+        unbudgetedSpent: summary.unbudgetedSpent,
       ));
     } catch (e) {
       emit(BudgetFailure(e.toString()));
@@ -57,6 +60,16 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   Future<void> _onUpdateBudgetLimit(UpdateBudgetLimitEvent event, emit) async {
     try {
       await budgetRepository.updateBudgetLimit(event.categoryId, event.newLimit, event.month);
+      
+      add(FetchBudgetsEvent(event.month));
+    } catch (e) {
+      emit(BudgetFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteBudgetCategory(DeleteBudgetCategoryEvent event, emit) async {
+    try {
+      await budgetRepository.deleteCategoryAndBudgets(event.categoryId);
       
       add(FetchBudgetsEvent(event.month));
     } catch (e) {
