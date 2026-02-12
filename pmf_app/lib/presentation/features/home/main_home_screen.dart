@@ -5,6 +5,7 @@ import 'package:pmf_app/core/constants/app_colors.dart';
 import 'package:pmf_app/presentation/features/budget/budget_screen.dart';
 import 'package:pmf_app/presentation/features/transaction/add_transaction_screen.dart';
 import 'package:pmf_app/presentation/features/transaction/transaction_list_screen.dart';
+import 'package:pmf_app/presentation/features/profile/profile_screen.dart';
 
 class MainHomeScreen extends StatefulWidget {
   const MainHomeScreen({super.key});
@@ -20,6 +21,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     const BudgetScreen(),
     const AddTransactionScreen(),
     const TransactionListScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -82,6 +84,11 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                 icon: Icon(Icons.receipt_long_outlined),
                 activeIcon: Icon(Icons.receipt_long),
                 label: 'History',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
               ),
             ],
           ),

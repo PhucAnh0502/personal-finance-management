@@ -15,10 +15,12 @@ import 'package:pmf_app/data/repositories/auth_repository.dart';
 import 'package:pmf_app/data/repositories/setup_repository.dart';
 import 'package:pmf_app/data/repositories/budget_repository.dart';
 import 'package:pmf_app/data/repositories/transaction_repository.dart';
+import 'package:pmf_app/data/repositories/user_repository.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
 import 'package:pmf_app/bloc/setup_bloc/setup_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
+import 'package:pmf_app/bloc/profile_bloc/profile_bloc.dart';
 import 'package:pmf_app/presentation/features/budget/budget_screen.dart';
 import 'package:pmf_app/presentation/features/home/main_home_screen.dart';
 import 'package:app_links/app_links.dart';
@@ -104,6 +106,7 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider(create: (context) => SetupRepository()),
         RepositoryProvider(create: (context) => BudgetRepository()),
         RepositoryProvider(create: (context) => TransactionRepository()),
+        RepositoryProvider(create: (context) => UserRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -118,6 +121,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider(
             create: (context) => TransactionBloc(transactionRepository: context.read<TransactionRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => ProfileBloc(userRepository: context.read<UserRepository>()),
           ),
         ],
         child: MaterialApp(

@@ -110,7 +110,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
               )
             );
           } else if (state is Authenticated) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
+            final targetRoute = state.hasFinishedSetup ? '/home' : '/setup';
+            Navigator.pushReplacementNamed(context, targetRoute);
           }
         },
         builder: (context, state) {
