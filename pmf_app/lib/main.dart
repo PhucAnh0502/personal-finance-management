@@ -21,6 +21,8 @@ import 'package:pmf_app/bloc/setup_bloc/setup_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
 import 'package:pmf_app/bloc/profile_bloc/profile_bloc.dart';
+import 'package:pmf_app/data/repositories/asset_repository.dart';
+import 'package:pmf_app/bloc/asset_bloc/asset_bloc.dart';
 import 'package:pmf_app/presentation/features/budget/budget_screen.dart';
 import 'package:pmf_app/presentation/features/home/main_home_screen.dart';
 import 'package:app_links/app_links.dart';
@@ -107,6 +109,7 @@ class _MyAppState extends State<MyApp> {
         RepositoryProvider(create: (context) => BudgetRepository()),
         RepositoryProvider(create: (context) => TransactionRepository()),
         RepositoryProvider(create: (context) => UserRepository()),
+        RepositoryProvider(create: (context) => AssetRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -124,6 +127,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider(
             create: (context) => ProfileBloc(userRepository: context.read<UserRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => AssetBloc(assetRepository: context.read<AssetRepository>()),
           ),
         ],
         child: MaterialApp(

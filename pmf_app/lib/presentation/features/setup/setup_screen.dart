@@ -485,148 +485,158 @@ class _SetupScreenState extends State<SetupScreen>
 
   void _showBottomSheetAddAsset() {
     final assetNameController = TextEditingController();
-    final assetTypeController = TextEditingController();
+    String selectedAssetType = 'Gold';
     final quantityController = TextEditingController();
     final priceController = TextEditingController();
     final dialogFormKey = GlobalKey<FormState>();
+    final assetTypeOptions = ['Gold', 'Silver', 'Stock', 'Crypto'];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
+        return StatefulBuilder(
+          builder: (context, setModalState) => BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 30,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 30,
-              ),
-              child: Form(
-                key: dialogFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Add New Asset",
-                          style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close,
-                              color: AppColors.textPrimary),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _buildBottomSheetTextField(assetNameController,
-                        "Asset Name", "e.g., Bitcoin, Gold"),
-                    const SizedBox(height: 16),
-                    _buildBottomSheetTextField(assetTypeController,
-                        "Asset Type", "e.g., Cryptocurrency"),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildBottomSheetTextField(
-                              quantityController,
-                              "Quantity",
-                              "0.00",
-                              TextInputType.number),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildBottomSheetTextField(
-                              priceController,
-                              "Price (per unit)",
-                              "0.00",
-                              TextInputType.number),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: AppColors.primaryEmerald,
-                                    width: 2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                "Cancel",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: AppColors.primaryEmerald,
-                                    fontWeight: FontWeight.bold),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 30,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 30,
+                ),
+                child: Form(
+                  key: dialogFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Add New Asset",
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                color: AppColors.textPrimary),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      _buildBottomSheetTextField(assetNameController,
+                          "Asset Name", "e.g., Bitcoin, Gold"),
+                      const SizedBox(height: 16),
+                      _buildAssetTypeDropdown(
+                        selectedAssetType,
+                        assetTypeOptions,
+                        (newValue) {
+                          setModalState(() {
+                            selectedAssetType = newValue;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildBottomSheetTextField(
+                                quantityController,
+                                "Quantity",
+                                "0.00",
+                                TextInputType.number),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildBottomSheetTextField(
+                                priceController,
+                                "Price (per unit)",
+                                "0.00",
+                                TextInputType.number),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: AppColors.primaryEmerald,
+                                      width: 2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  "Cancel",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: AppColors.primaryEmerald,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              if (dialogFormKey.currentState!.validate()) {
-                                final newAsset = AssetModel(
-                                  assetName: assetNameController.text,
-                                  assetType: assetTypeController.text,
-                                  quantity: double.tryParse(
-                                          quantityController.text) ??
-                                      0,
-                                  purchasePrice:
-                                      double.tryParse(priceController.text) ??
-                                          0,
-                                );
-                                setState(() {
-                                  _assets.add(newAsset);
-                                });
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.emeraldGradient,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                "Add Asset",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                if (dialogFormKey.currentState!.validate()) {
+                                  final newAsset = AssetModel(
+                                    assetName: assetNameController.text,
+                                    assetType: selectedAssetType,
+                                    quantity: double.tryParse(
+                                            quantityController.text) ??
+                                        0,
+                                    purchasePrice:
+                                        double.tryParse(priceController.text) ??
+                                            0,
+                                  );
+                                  setState(() {
+                                    _assets.add(newAsset);
+                                  });
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.emeraldGradient,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  "Add Asset",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -663,6 +673,49 @@ class _SetupScreenState extends State<SetupScreen>
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'This field cannot be empty';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildAssetTypeDropdown(
+    String selectedValue,
+    List<String> options,
+    Function(String) onChanged,
+  ) {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      style: const TextStyle(color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        labelText: "Asset Type",
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.primaryEmerald, width: 2),
+        ),
+      ),
+      items: options
+          .map(
+            (option) => DropdownMenuItem<String>(
+              value: option,
+              child: Text(
+                option,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select an asset type';
         }
         return null;
       },
