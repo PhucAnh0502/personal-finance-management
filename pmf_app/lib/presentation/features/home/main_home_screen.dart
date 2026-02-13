@@ -7,6 +7,7 @@ import 'package:pmf_app/presentation/features/transaction/add_transaction_screen
 import 'package:pmf_app/presentation/features/transaction/transaction_list_screen.dart';
 import 'package:pmf_app/presentation/features/profile/profile_screen.dart';
 import 'package:pmf_app/presentation/features/assets/asset_screen.dart';
+import 'package:pmf_app/presentation/features/group/group_list_screen.dart';
 
 class MainHomeScreen extends StatefulWidget {
   const MainHomeScreen({super.key});
@@ -23,6 +24,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     const AddTransactionScreen(),
     const TransactionListScreen(),
     const AssetScreen(),
+    const GroupListScreen(),
     const ProfileScreen(),
   ];
 
@@ -91,6 +93,11 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                 icon: Icon(Icons.trending_up_outlined),
                 activeIcon: Icon(Icons.trending_up),
                 label: 'Assets',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.groups_outlined),
+                activeIcon: Icon(Icons.groups),
+                label: 'Groups',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person_outline),
