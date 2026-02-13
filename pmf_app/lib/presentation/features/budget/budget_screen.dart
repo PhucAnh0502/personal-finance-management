@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/budget_model.dart';
+import 'package:pmf_app/presentation/features/budget/add_budget_screen.dart';
+import 'package:pmf_app/presentation/features/transaction/add_transaction_screen.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -131,11 +134,11 @@ class _BudgetScreenState extends State<BudgetScreen>
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddBudgetDialog,
+        onPressed: _openAddExpenseScreen,
         backgroundColor: AppColors.primaryEmerald,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          'Add Budget',
+          'Add Expense',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -165,13 +168,26 @@ class _BudgetScreenState extends State<BudgetScreen>
             delegate: SliverChildListDelegate([
               _buildTotalCard(state),
               const SizedBox(height: 30),
-              const Text(
-                'Budget Allocations',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Budget Allocations',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _openAddBudgetScreen,
+                    icon: const Icon(Icons.add, color: AppColors.primaryEmerald),
+                    label: const Text(
+                      'Add Budget',
+                      style: TextStyle(color: AppColors.primaryEmerald),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               ...state.budgets.map((budget) => Padding(
@@ -257,10 +273,10 @@ class _BudgetScreenState extends State<BudgetScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${unallocated.toStringAsFixed(0)} VND',
+                        '${FormatHelper.formatCurrencyWithSymbol(unallocated, symbol: ' VND')}',
                         style: const TextStyle(
                           color: AppColors.primaryEmerald,
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -278,10 +294,10 @@ class _BudgetScreenState extends State<BudgetScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${total.toStringAsFixed(0)} VND',
+                        '${FormatHelper.formatCurrencyWithSymbol(total, symbol: ' VND')}',
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -302,7 +318,7 @@ class _BudgetScreenState extends State<BudgetScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Allocated: ${allocated.toStringAsFixed(0)} VND (${(percentageAllocated * 100).toStringAsFixed(0)}%)',
+                'Allocated: ${FormatHelper.formatCurrency(allocated)} VND (${(percentageAllocated * 100).toStringAsFixed(0)}%)',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
@@ -402,7 +418,7 @@ class _BudgetScreenState extends State<BudgetScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${remaining.toStringAsFixed(0)} VND',
+                        '${FormatHelper.formatCurrencyWithSymbol(remaining, symbol: ' VND')}',
                         style: TextStyle(
                           color: statusColor,
                           fontSize: 18,
@@ -423,7 +439,7 @@ class _BudgetScreenState extends State<BudgetScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${spent.toStringAsFixed(0)} / ${total.toStringAsFixed(0)}',
+                        '${FormatHelper.formatCurrency(spent)} / ${FormatHelper.formatCurrency(total)}',
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 14,
@@ -502,143 +518,22 @@ class _BudgetScreenState extends State<BudgetScreen>
     );
   }
 
-  void _showAddBudgetDialog() {
-    final nameController = TextEditingController();
-    final limitController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+  void _openAddBudgetScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<BudgetBloc>(),
+          child: const AddBudgetScreen(),
+        ),
+      ),
+    );
+  }
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
-              ),
-            ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 30,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 30,
-              ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Add Budget Allocation',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close,
-                              color: AppColors.textPrimary),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _buildDialogTextField(
-                      nameController,
-                      'Category Name',
-                      'e.g., Food, Transport',
-                      TextInputType.text,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDialogTextField(
-                      limitController,
-                      'Budget Limit (VND)',
-                      '0.00',
-                      TextInputType.number,
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: AppColors.primaryEmerald,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Cancel',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: AppColors.primaryEmerald,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              if (formKey.currentState!.validate()) {
-                                final name = nameController.text;
-                                final limit =
-                                    double.tryParse(limitController.text) ?? 0;
-
-                                context.read<BudgetBloc>().add(
-                                      AddBudgetCategoryEvent(
-                                        name: name,
-                                        limitAmount: limit,
-                                        month: DateTime.now(),
-                                      ),
-                                    );
-
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.emeraldGradient,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Add Budget',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+  void _openAddExpenseScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AddTransactionScreen(),
+      ),
     );
   }
 

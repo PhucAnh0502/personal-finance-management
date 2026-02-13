@@ -292,14 +292,27 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Add Transaction',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new,
+                                color: AppColors.navyDark,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            const SizedBox(width: 4),
+                            const Expanded(
+                              child: Text(
+                                'Add Transaction',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Text(

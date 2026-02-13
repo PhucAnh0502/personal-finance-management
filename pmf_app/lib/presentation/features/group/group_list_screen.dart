@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/group_model.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 import 'group_detail_screen.dart';
@@ -248,7 +249,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Total fund: ${group.totalFund.toStringAsFixed(2)} VND',
+                      'Total fund: ${FormatHelper.formatCurrencyWithSymbol(group.totalFund, symbol: ' VND')}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,

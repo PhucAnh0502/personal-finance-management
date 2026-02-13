@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 import '../../../bloc/setup_bloc/setup_bloc.dart';
 import '../../../data/models/asset_model.dart';
@@ -458,7 +459,7 @@ class _SetupScreenState extends State<SetupScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${asset.quantity} × ${asset.purchasePrice.toStringAsFixed(2)} = ${totalValue.toStringAsFixed(2)} VND',
+                          '${asset.quantity} × ${FormatHelper.formatCurrency(asset.purchasePrice)} = ${FormatHelper.formatCurrencyWithSymbol(totalValue, symbol: ' VND')}',
                           style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 12),
                         ),

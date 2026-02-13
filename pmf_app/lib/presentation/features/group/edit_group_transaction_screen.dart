@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/category_model.dart';
 import 'package:pmf_app/data/models/group_transaction_model.dart';
 
@@ -238,7 +239,7 @@ class _EditGroupTransactionScreenState
   }
 
   Widget _buildAmountField() {
-    final amountText = widget.transaction.amount.toStringAsFixed(0);
+    final amountText = FormatHelper.formatCurrency(widget.transaction.amount);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),

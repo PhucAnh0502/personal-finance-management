@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/category_model.dart';
 import 'package:pmf_app/data/models/group_budget_model.dart';
 import 'package:pmf_app/data/models/group_model.dart';
@@ -299,7 +300,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 								),
 								const SizedBox(height: 4),
 								Text(
-									'${totalFund.toStringAsFixed(2)} VND',
+									'${FormatHelper.formatCurrencyWithSymbol(totalFund, symbol: ' VND')}',
 									style: const TextStyle(
 										color: AppColors.navyDark,
 										fontSize: 18,
@@ -361,7 +362,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							),
 							const SizedBox(height: 4),
 							Text(
-								'-${transaction.amount.toStringAsFixed(2)} VND',
+								'-${FormatHelper.formatCurrencyWithSymbol(transaction.amount, symbol: ' VND')}',
 								style: const TextStyle(
 									color: AppColors.expense,
 									fontSize: 14,
@@ -479,7 +480,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 										),
 									),
 									Text(
-										'${totalSpent.toStringAsFixed(2)} VND',
+										'${FormatHelper.formatCurrencyWithSymbol(totalSpent, symbol: ' VND')}',
 										style: const TextStyle(
 											color: AppColors.expense,
 											fontSize: 16,
@@ -499,7 +500,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 										),
 									),
 									Text(
-										'${remaining.toStringAsFixed(2)} VND',
+										'${FormatHelper.formatCurrencyWithSymbol(remaining, symbol: ' VND')}',
 										style: TextStyle(
 											color: remaining >= 0 ? AppColors.income : AppColors.expense,
 											fontSize: 16,
@@ -1437,7 +1438,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 															Text(
 																limit <= 0
 																	? 'No budget'
-																	: '${remaining.toStringAsFixed(0)} VND',
+																	: '${FormatHelper.formatCurrencyWithSymbol(remaining, symbol: ' VND')}',
 																style: TextStyle(
 																	color: statusColor,
 																	fontSize: 18,
@@ -1458,7 +1459,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 															),
 															const SizedBox(height: 4),
 															Text(
-																'${spent.toStringAsFixed(0)} / ${limit.toStringAsFixed(0)}',
+																'${FormatHelper.formatCurrency(spent)} / ${FormatHelper.formatCurrency(limit)}',
 																style: const TextStyle(
 																	color: AppColors.textPrimary,
 																	fontSize: 14,

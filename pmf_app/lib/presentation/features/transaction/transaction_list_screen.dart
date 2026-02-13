@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:ui' show ImageFilter;
@@ -264,7 +265,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                   ),
                 ),
                 Text(
-                  '${isIncome ? "+" : "-"}${transaction.amount.toStringAsFixed(0)} VND',
+                  '${isIncome ? "+" : "-"}${FormatHelper.formatCurrencyWithSymbol(transaction.amount, symbol: ' VND')}',
                   style: TextStyle(
                     color: isIncome ? AppColors.primaryEmerald : AppColors.expense,
                     fontSize: 16,
@@ -327,7 +328,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                   _buildDetailRow('Type', isIncome ? 'Income' : 'Expense'),
                   _buildDetailRow(
                     'Amount',
-                    '${isIncome ? "+" : "-"}${transaction.amount.toStringAsFixed(0)} VND',
+                    '${isIncome ? "+" : "-"}${FormatHelper.formatCurrencyWithSymbol(transaction.amount, symbol: ' VND')}',
                     valueColor: isIncome ? AppColors.primaryEmerald : AppColors.expense,
                   ),
                   _buildDetailRow('Date', dateFormat.format(transaction.transactionDate)),

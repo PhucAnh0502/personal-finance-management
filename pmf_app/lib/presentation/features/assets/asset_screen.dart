@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/asset_bloc/asset_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/asset_model.dart';
 
 class AssetScreen extends StatefulWidget {
@@ -216,7 +217,7 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
               ),
               const SizedBox(height: 12),
               Text(
-                '${totalValue.toStringAsFixed(2)} VND',
+                FormatHelper.formatCurrencyWithSymbol(totalValue, symbol: ' VND'),
                 style: TextStyle(
                   color: cardColor,
                   fontSize: 36,
@@ -332,7 +333,7 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${totalValue.toStringAsFixed(2)} VND',
+                              FormatHelper.formatCurrencyWithSymbol(totalValue, symbol: ' VND'),
                               style: TextStyle(
                                 color: cardColor,
                                 fontSize: 16,
@@ -357,8 +358,8 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _buildAssetInfo('Quantity', asset.quantity.toString()),
-                        _buildAssetInfo('Buy Price', '${asset.purchasePrice.toStringAsFixed(2)} VND'),
-                        _buildAssetInfo('Current Price', '${asset.currentPrice.toStringAsFixed(2)} VND'),
+                        _buildAssetInfo('Buy Price', FormatHelper.formatCurrencyWithSymbol(asset.purchasePrice, symbol: ' VND')),
+                        _buildAssetInfo('Current Price', FormatHelper.formatCurrencyWithSymbol(asset.currentPrice, symbol: ' VND')),
                       ],
                     ),
                   ],
