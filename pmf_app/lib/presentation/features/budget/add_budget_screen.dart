@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 
 class AddBudgetScreen extends StatefulWidget {
   const AddBudgetScreen({super.key});
@@ -54,12 +55,16 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
       body: AnimatedBuilder(
         animation: _ambientController,
         builder: (context, child) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final gradientColors = isDark
+              ? [const Color(0xFF0F1923), const Color(0xFF1A2F4A), const Color(0xFF0F1923)]
+              : AppColors.backgroundGradient.colors;
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: _bgAlignmentAnimation.value,
                 end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+                colors: gradientColors,
               ),
             ),
             child: Stack(
@@ -133,16 +138,16 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.navyDark),
+            icon: Icon(Icons.arrow_back_ios, color: AppTheme.getTextPrimaryColor(context)),
             onPressed: () => Navigator.pop(context),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Add Budget Allocation',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.navyDark,
+                color: AppTheme.getTextPrimaryColor(context),
               ),
             ),
           ),
@@ -152,6 +157,13 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
   }
 
   Widget _buildHeaderCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerBgColor = isDark 
+        ? const Color(0xFF1A2F4A).withOpacity(0.85)
+        : Colors.white.withOpacity(0.9);
+    final borderColor = isDark
+        ? const Color(0xFF1A2F4A).withOpacity(0.5)
+        : Colors.white.withOpacity(0.7);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -160,9 +172,9 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: headerBgColor,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.7)),
+            border: Border.all(color: borderColor),
           ),
           child: Row(
             children: [
@@ -179,11 +191,11 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Create a monthly budget allocation for a category.',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: isDark ? Colors.white70 : AppColors.textSecondary,
                     height: 1.4,
                     fontSize: 13,
                   ),
@@ -197,11 +209,13 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
   }
 
   Widget _buildInputCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = AppTheme.getSurfaceColor(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondaryEmerald.withOpacity(0.6)),
         boxShadow: [
@@ -239,19 +253,23 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
     required String hint,
     required TextInputType keyboardType,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white70 : AppColors.textSecondary;
+    final enabledBorderColor = isDark ? Colors.white12 : Colors.black12;
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: keyboardType == TextInputType.number
           ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
           : [],
+      style: TextStyle(color: isDark ? Colors.white : Colors.black),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.black12),
+        labelStyle: TextStyle(color: textColor),
+        hintStyle: TextStyle(color: textColor),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: enabledBorderColor),
         ),
         focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.primaryEmerald, width: 2),
