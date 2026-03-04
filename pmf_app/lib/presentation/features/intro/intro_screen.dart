@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 
 class IntroScreen extends StatefulWidget{
   const IntroScreen({super.key});
@@ -8,25 +9,15 @@ class IntroScreen extends StatefulWidget{
   State<IntroScreen> createState() => _IntroScreenState();
 }
 
-class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
+class _IntroScreenState extends State<IntroScreen> {
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.96, end: 1.02)
-        .animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
     _navigateToNext();
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -40,19 +31,16 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
         ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ScaleTransition(
-                scale: _pulseAnimation,
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 260,
-                ),
+              Image.asset(
+                'assets/images/logo.png',
+                width: 260,
               ),
               const SizedBox(height: 20),
               const CircularProgressIndicator(

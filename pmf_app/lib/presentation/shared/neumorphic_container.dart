@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 
-class NeumorphicContainer extends StatefulWidget{
+class NeumorphicContainer extends StatelessWidget {
   final Widget? child;
   final BorderRadiusGeometry? borderRadius;
   final EdgeInsetsGeometry? padding;
   final bool isConvex;
-  final Color baseColor;
+  final Color? baseColor;
 
   const NeumorphicContainer({
     super.key,
@@ -14,52 +14,31 @@ class NeumorphicContainer extends StatefulWidget{
     this.borderRadius,
     this.padding,
     this.isConvex = false,
-    this.baseColor = AppColors.surface,
+    this.baseColor,
   });
 
   @override
-  State<NeumorphicContainer> createState() => _NeumorphicContainerState();
-}
-
-class _NeumorphicContainerState extends State<NeumorphicContainer> {
-  @override
   Widget build(BuildContext context) {
+    final bgColor = baseColor ?? AppTheme.getSurfaceColor(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: widget.padding ?? const EdgeInsets.all(8.0),
+      padding: padding ?? const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: widget.baseColor,
-        borderRadius: widget.borderRadius ?? BorderRadius.circular(20),
-        boxShadow: widget.isConvex
-            ? [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.7),
-                  offset: const Offset(-6, -6),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  offset: const Offset(6, 6),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                )
-            ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  offset: const Offset(4, 4),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.7),
-                  offset: const Offset(-4, -4),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
+        color: bgColor,
+        borderRadius: borderRadius ?? BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isDark 
+              ? Colors.black.withOpacity(0.3)
+              : Colors.black.withOpacity(0.08),
+            offset: const Offset(2, 2),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
+        ],
       ),
-      child: widget.child,
+      child: child,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/group_model.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
@@ -15,159 +16,123 @@ class GroupListScreen extends StatefulWidget {
   State<GroupListScreen> createState() => _GroupListScreenState();
 }
 
-class _GroupListScreenState extends State<GroupListScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
+class _GroupListScreenState extends State<GroupListScreen> {
 
   @override
   void initState() {
     super.initState();
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation = AlignmentTween(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
     context.read<GroupBloc>().add(FetchGroups());
   }
 
   @override
   void dispose() {
-    _ambientController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -140,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryEmerald.withOpacity(0.6),
                 ),
-                Positioned(
-                  bottom: -140,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
+              ),
+            ),
+            SafeArea(
+              child: BlocBuilder<GroupBloc, GroupState>(
+                builder: (context, state) {
+                  if (state is GroupLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryEmerald,
                       ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: BlocBuilder<GroupBloc, GroupState>(
-                    builder: (context, state) {
-                      if (state is GroupLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryEmerald,
-                          ),
-                        );
-                      }
+                    );
+                  }
 
-                      if (state is GroupError) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: AppColors.error,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                state.message,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                onPressed: () =>
-                                    context.read<GroupBloc>().add(FetchGroups()),
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('Retry'),
-                              ),
-                            ],
+                  if (state is GroupError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppColors.error,
+                            size: 48,
                           ),
-                        );
-                      }
-
-                      if (state is GroupLoaded) {
-                        return SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Groups',
-                                  style: TextStyle(
-                                    color: AppColors.navyDark,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                _buildGroupList(state.groups),
-                                const SizedBox(height: 40),
-                              ],
+                          const SizedBox(height: 16),
+                          Text(
+                            state.message,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppTheme.getSubtitleStyle(context).color,
+                              fontSize: 14,
                             ),
                           ),
-                        );
-                      }
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: () =>
+                                context.read<GroupBloc>().add(FetchGroups()),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ],
+                  if (state is GroupLoaded) {
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Groups',
+                              style: AppTheme.getTitleStyle(context).copyWith(
+                                fontSize: 32,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            _buildGroupList(state.groups),
+                            const SizedBox(height: 40),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateGroupModal,
@@ -188,10 +153,10 @@ class _GroupListScreenState extends State<GroupListScreen>
               color: AppColors.primaryEmerald.withOpacity(0.5),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'No groups yet',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: AppTheme.getSubtitleStyle(context).color,
                 fontSize: 16,
               ),
             ),
@@ -241,8 +206,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                   children: [
                     Text(
                       group.name,
-                      style: const TextStyle(
-                        color: AppColors.navyDark,
+                      style: TextStyle(
+                        color: AppTheme.getTextPrimaryColor(context),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -250,8 +215,8 @@ class _GroupListScreenState extends State<GroupListScreen>
                     const SizedBox(height: 4),
                     Text(
                       'Total fund: ${FormatHelper.formatCurrencyWithSymbol(group.totalFund, symbol: ' VND')}',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: AppTheme.getSubtitleStyle(context).color,
                         fontSize: 12,
                       ),
                     ),

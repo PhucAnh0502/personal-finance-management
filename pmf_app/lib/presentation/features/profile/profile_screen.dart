@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
+import 'package:pmf_app/bloc/theme_cubit/theme_cubit.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/data/models/profile_model.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 import '../../../bloc/profile_bloc/profile_bloc.dart';
@@ -33,18 +35,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       debugPrint('[ProfileScreen] Loading profile...');
       context.read<ProfileBloc>().add(LoadProfile());
+      
+      // Load current dark mode state from ThemeCubit
+      final themeState = context.read<ThemeCubit>().state;
+      setState(() {
+        _isDarkMode = themeState.isDarkMode;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppTheme.getScaffoldBackground(context),
       appBar: AppBar(
         title: const Text('Profile'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: AppColors.background,
+        backgroundColor: AppTheme.getScaffoldBackground(context),
       ),
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
@@ -166,10 +174,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // User name
           Text(
             displayName.isNotEmpty ? displayName : 'User',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: AppColors.navyDark,
+              color: AppTheme.getTextPrimaryColor(context),
             ),
           ),
           const SizedBox(height: 4),
@@ -206,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.mintLight,
+      backgroundColor: AppTheme.getModalBackgroundColor(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -222,23 +230,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Edit Profile',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.navyDark,
+                  color: AppTheme.getTextPrimaryColor(context),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: controller,
-                style: const TextStyle(color: AppColors.navyDark),
+                style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
                 decoration: InputDecoration(
                   labelText: 'Display Name',
-                  labelStyle: const TextStyle(color: AppColors.navyDark),
+                  labelStyle: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
                   filled: true,
-                  fillColor: AppColors.secondaryEmerald,
+                  fillColor: AppTheme.getSurfaceColor(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -246,12 +254,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Choose Avatar',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.navyDark,
+                  color: AppTheme.getTextPrimaryColor(context),
                 ),
               ),
               const SizedBox(height: 12),
@@ -352,6 +360,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'Dark Mode',
           _isDarkMode,
           (value) {
+            // Call setDarkMode directly without setState to avoid double rebuild
+            context.read<ThemeCubit>().setDarkMode(value);
             setState(() {
               _isDarkMode = value;
             });
@@ -387,16 +397,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Language',
-                    style: TextStyle(fontSize: 14, color: AppColors.navyDark),
+                    style: TextStyle(fontSize: 14, color: AppTheme.getTextPrimaryColor(context)),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _selectedLanguage,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.navyDark,
+                      color: AppTheme.getTextPrimaryColor(context),
                     ),
                   ),
                 ],
@@ -412,7 +422,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLanguageModal() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.mintLight,
+      backgroundColor: AppTheme.getModalBackgroundColor(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -422,12 +432,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Select Language',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.navyDark,
+                color: AppTheme.getTextPrimaryColor(context),
               ),
             ),
             const SizedBox(height: 20),
@@ -468,7 +478,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               language,
               style: TextStyle(
                 fontSize: 14,
-                color: isSelected ? AppColors.primaryEmerald : AppColors.navyDark,
+                color: isSelected ? AppColors.primaryEmerald : AppTheme.getTextPrimaryColor(context),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -500,7 +510,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(fontSize: 14, color: AppColors.navyDark),
+              style: TextStyle(fontSize: 14, color: AppTheme.getTextPrimaryColor(context)),
             ),
           ),
           GestureDetector(
@@ -565,8 +575,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: AppTheme.getTextPrimaryColor(context),
           fontWeight: FontWeight.bold,
           fontSize: 16,
         ),
@@ -578,14 +588,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.mintLight,
-        title: const Text(
+        backgroundColor: AppTheme.getModalBackgroundColor(context),
+        title: Text(
           'Logout',
-          style: TextStyle(color: AppColors.navyDark),
+          style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to logout?',
-          style: TextStyle(color: AppColors.navyDark),
+          style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
         ),
         actions: [
           TextButton(

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/data/models/transaction_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,8 +17,7 @@ class AddTransactionScreen extends StatefulWidget {
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
 }
 
-class _AddTransactionScreenState extends State<AddTransactionScreen>
-    with TickerProviderStateMixin {
+class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -31,30 +31,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   XFile? _receiptImage;
   bool _isUploadingReceipt = false;
 
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
-
   @override
   void initState() {
     super.initState();
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation =
-        AlignmentTween(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ).animate(
-          CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut),
-        );
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-      CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut),
-    );
-
     _loadCategories();
     _loadAccountId();
   }
@@ -127,7 +106,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   @override
   void dispose() {
-    _ambientController.dispose();
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -243,97 +221,80 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -140,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryEmerald.withOpacity(0.6),
                 ),
-                Positioned(
-                  bottom: -140,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_ios_new,
-                                color: AppColors.navyDark,
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            const SizedBox(width: 4),
-                            const Expanded(
-                              child: Text(
-                                'Add Transaction',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_ios_new,
+                            color: AppTheme.getTextPrimaryColor(context),
+                          ),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _transactionType == TransactionType.income
-                              ? 'Record your income'
-                              : 'Track your spending',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 16,
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Add Transaction',
+                            style: AppTheme.getTitleStyle(context).copyWith(
+                              fontSize: 28,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 40),
-                        _buildForm(),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _transactionType == TransactionType.income
+                          ? 'Record your income'
+                          : 'Track your spending',
+                      style: AppTheme.getBodyStyle(context).copyWith(
+                        color: AppTheme.getSubtitleStyle(context).color,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    _buildForm(),
+                  ],
                 ),
-              ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -347,8 +308,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            color: Colors.white.withOpacity(0.85),
-            border: Border.all(color: Colors.white.withOpacity(0.7)),
+            color: AppTheme.getModalBackgroundColor(context).withOpacity(0.9),
+            border: Border.all(
+              color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF5A6B90).withOpacity(0.15),
@@ -362,10 +325,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Type',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
+                  style: AppTheme.getHeading2Style(context).copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -393,10 +355,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   ],
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Amount',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
+                  style: AppTheme.getHeading2Style(context).copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -410,15 +371,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                       RegExp(r'^\d+\.?\d{0,2}'),
                     ),
                   ],
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.getTextPrimaryColor(context),
                     fontSize: 18,
                   ),
                   decoration: InputDecoration(
                     hintText: '0.00',
-                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    hintStyle: TextStyle(
+                      color: AppTheme.getSubtitleStyle(context).color,
+                    ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.8),
+                    fillColor: AppTheme.getSurfaceColor(context).withOpacity(0.8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -428,8 +391,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                       color: AppColors.primaryEmerald,
                     ),
                     suffixText: 'VND',
-                    suffixStyle: const TextStyle(
-                      color: AppColors.textSecondary,
+                    suffixStyle: TextStyle(
+                      color: AppTheme.getSubtitleStyle(context).color,
                     ),
                   ),
                   validator: (value) {
@@ -444,10 +407,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                 ),
                 if (_transactionType == TransactionType.expense) ...[
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     'Category',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
+                    style: AppTheme.getHeading2Style(context).copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -458,7 +420,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppTheme.getSurfaceColor(context).withOpacity(0.8),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -473,15 +435,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                               _selectedCategoryName ?? 'Select a category',
                               style: TextStyle(
                                 color: _selectedCategoryName == null
-                                    ? AppColors.textSecondary
-                                    : AppColors.textPrimary,
+                                    ? AppTheme.getSubtitleStyle(context).color
+                                    : AppTheme.getTextPrimaryColor(context),
                                 fontSize: 16,
                               ),
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.arrow_drop_down,
-                            color: AppColors.textSecondary,
+                            color: AppTheme.getSubtitleStyle(context).color,
                           ),
                         ],
                       ),
@@ -491,10 +453,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Receipt (optional)',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
+                        style: AppTheme.getHeading2Style(context).copyWith(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -512,10 +473,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppTheme.getSurfaceColor(context).withOpacity(0.8),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.6),
+                          color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
                         ),
                       ),
                       child: Row(
@@ -528,8 +489,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           Expanded(
                             child: Text(
                               _receiptImage!.name,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                              style: TextStyle(
+                                color: AppTheme.getTextPrimaryColor(context),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -556,10 +517,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     ),
                 ],
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Note (optional)',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
+                  style: AppTheme.getHeading2Style(context).copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -568,15 +528,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                 TextFormField(
                   controller: _noteController,
                   maxLines: 3,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: AppTheme.getTextPrimaryColor(context),
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Add a note...',
-                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    hintStyle: TextStyle(
+                      color: AppTheme.getSubtitleStyle(context).color,
+                    ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.8),
+                    fillColor: AppTheme.getSurfaceColor(context).withOpacity(0.8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -648,7 +610,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         decoration: BoxDecoration(
           color: isSelected
               ? color.withOpacity(0.2)
-              : Colors.white.withOpacity(0.8),
+              : AppTheme.getSurfaceColor(context).withOpacity(0.8),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -658,12 +620,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isSelected ? color : AppColors.textSecondary),
+            Icon(
+              icon,
+              color: isSelected ? color : AppTheme.getSubtitleStyle(context).color,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? color : AppColors.textSecondary,
+                color: isSelected ? color : AppTheme.getSubtitleStyle(context).color,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -688,7 +653,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: AppTheme.getModalBackgroundColor(context),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(32),
                 topRight: Radius.circular(32),
@@ -702,31 +667,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withOpacity(0.3),
+                    color: (AppTheme.getSubtitleStyle(context).color ??
+                            AppColors.textSecondary)
+                        .withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     'Select Category',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTheme.getTitleStyle(context).copyWith(fontSize: 20),
                   ),
                 ),
                 const SizedBox(height: 20),
                 if (_categories.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(40),
+                  Padding(
+                    padding: const EdgeInsets.all(40),
                     child: Text(
                       'No categories available.\nPlease create a budget first.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppTheme.getSubtitleStyle(context).color,
                         fontSize: 14,
                       ),
                     ),
@@ -751,8 +714,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                         ),
                         title: Text(
                           category['name'],
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
+                          style: TextStyle(
+                            color: AppTheme.getTextPrimaryColor(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),

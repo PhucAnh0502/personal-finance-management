@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/category_model.dart';
 import 'package:pmf_app/data/models/group_transaction_model.dart';
@@ -29,10 +30,7 @@ class EditGroupTransactionScreen extends StatefulWidget {
 
 class _EditGroupTransactionScreenState
     extends State<EditGroupTransactionScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
+  {
 
   final _imagePicker = ImagePicker();
   final _amountController = TextEditingController();
@@ -51,24 +49,10 @@ class _EditGroupTransactionScreenState
     _selectedCategoryId = widget.transaction.category?.id;
     _currentImageUrl = widget.transaction.imageProof;
 
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 9),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation = AlignmentTween(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
-    _ambientController.dispose();
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -134,55 +118,40 @@ class _EditGroupTransactionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -100,
+              left: -60,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryEmerald.withOpacity(0.6),
                 ),
-                Positioned(
-                  bottom: -100,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-                _buildContent(),
-              ],
+              ),
             ),
-          );
-        },
+            _buildContent(),
+          ],
+        ),
       ),
     );
   }
@@ -220,17 +189,16 @@ class _EditGroupTransactionScreenState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.navyDark),
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: AppTheme.getTextPrimaryColor(context),
+            ),
             onPressed: () => Navigator.pop(context),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Expense Detail',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.navyDark,
-              ),
+              style: AppTheme.getTitleStyle(context).copyWith(fontSize: 20),
             ),
           ),
         ],
@@ -244,9 +212,11 @@ class _EditGroupTransactionScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondaryEmerald.withOpacity(0.6)),
+        border: Border.all(
+          color: AppColors.secondaryEmerald.withOpacity(0.6),
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondaryEmerald.withOpacity(0.45),
@@ -258,12 +228,9 @@ class _EditGroupTransactionScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Amount',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 14),
           ),
           const SizedBox(height: 8),
           Row(
@@ -271,18 +238,17 @@ class _EditGroupTransactionScreenState
             children: [
               Text(
                 amountText,
-                style: const TextStyle(
-                  color: AppColors.navyDark,
+                style: TextStyle(
+                  color: AppTheme.getTextPrimaryColor(context),
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.2,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'VND',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
+                style: AppTheme.getSubtitleStyle(context).copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -301,19 +267,16 @@ class _EditGroupTransactionScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondaryEmerald.withOpacity(0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Category',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 14),
           ),
           const SizedBox(height: 8),
           Align(
@@ -321,7 +284,7 @@ class _EditGroupTransactionScreenState
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.mintLight,
+                color: AppTheme.getAccentMintColor(context),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
                   color: AppColors.secondaryEmerald.withOpacity(0.8),
@@ -329,8 +292,8 @@ class _EditGroupTransactionScreenState
               ),
               child: Text(
                 categoryName,
-                style: const TextStyle(
-                  color: AppColors.navyDark,
+                style: TextStyle(
+                  color: AppTheme.getTextPrimaryColor(context),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -348,19 +311,16 @@ class _EditGroupTransactionScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondaryEmerald.withOpacity(0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Note (optional)',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 14),
           ),
           const SizedBox(height: 8),
           Text(
@@ -369,8 +329,8 @@ class _EditGroupTransactionScreenState
                 : noteText,
             style: TextStyle(
               color: (noteText == null || noteText.isEmpty)
-                  ? AppColors.textSecondary
-                  : AppColors.navyDark,
+                  ? AppTheme.getSubtitleStyle(context).color
+                  : AppTheme.getTextPrimaryColor(context),
               fontSize: 16,
               height: 1.4,
             ),
@@ -385,19 +345,16 @@ class _EditGroupTransactionScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondaryEmerald.withOpacity(0.6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Receipt',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 14),
           ),
           const SizedBox(height: 12),
           if (_receiptImage == null && _currentImageUrl == null)
@@ -405,12 +362,12 @@ class _EditGroupTransactionScreenState
           else
             _buildReceiptPreview(),
           if (_receiptImage != null || _currentImageUrl != null)
-            const Padding(
-              padding: EdgeInsets.only(top: 10),
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
               child: Text(
                 'Tap image to view',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: AppTheme.getSubtitleStyle(context).color,
                   fontSize: 12,
                 ),
               ),
@@ -425,7 +382,7 @@ class _EditGroupTransactionScreenState
       height: 180,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.mintLight,
+        color: AppTheme.getAccentMintColor(context),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: AppColors.secondaryEmerald.withOpacity(0.7),
@@ -433,15 +390,21 @@ class _EditGroupTransactionScreenState
           width: 1.2,
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long, color: AppColors.textSecondary, size: 30),
-            SizedBox(height: 8),
+            Icon(
+              Icons.receipt_long,
+              color: AppTheme.getSubtitleStyle(context).color,
+              size: 30,
+            ),
+            const SizedBox(height: 8),
             Text(
               'No receipt attached',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(
+                color: AppTheme.getSubtitleStyle(context).color,
+              ),
             ),
           ],
         ),
@@ -459,9 +422,12 @@ class _EditGroupTransactionScreenState
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 height: 200,
-                color: AppColors.mintLight,
-                child: const Center(
-                  child: Icon(Icons.receipt, color: AppColors.textSecondary),
+                color: AppTheme.getAccentMintColor(context),
+                child: Center(
+                  child: Icon(
+                    Icons.receipt,
+                    color: AppTheme.getSubtitleStyle(context).color,
+                  ),
                 ),
               );
             },
@@ -474,9 +440,12 @@ class _EditGroupTransactionScreenState
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 height: 200,
-                color: AppColors.mintLight,
-                child: const Center(
-                  child: Icon(Icons.receipt, color: AppColors.textSecondary),
+                color: AppTheme.getAccentMintColor(context),
+                child: Center(
+                  child: Icon(
+                    Icons.receipt,
+                    color: AppTheme.getSubtitleStyle(context).color,
+                  ),
                 ),
               );
             },
@@ -515,7 +484,7 @@ class _EditGroupTransactionScreenState
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Container(
-            color: Colors.white,
+            color: AppTheme.getModalBackgroundColor(context),
             child: imageWidget,
           ),
         ),

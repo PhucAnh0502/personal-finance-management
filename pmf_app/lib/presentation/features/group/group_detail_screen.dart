@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/group_bloc/group_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/category_model.dart';
 import 'package:pmf_app/data/models/group_budget_model.dart';
@@ -24,9 +25,6 @@ class GroupDetailScreen extends StatefulWidget {
 
 class _GroupDetailScreenState extends State<GroupDetailScreen>
 		with TickerProviderStateMixin {
-	late AnimationController _ambientController;
-	late Animation<Alignment> _bgAlignmentAnimation;
-	late Animation<double> _floatAnimation;
 	late TabController _tabController;
 	late double _totalFund;
 	List<CategoryModel> _categories = [];
@@ -39,19 +37,6 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 		super.initState();
 		_totalFund = widget.group.totalFund;
 		_tabController = TabController(length: 2, vsync: this);
-		_ambientController = AnimationController(
-			vsync: this,
-			duration: const Duration(seconds: 7),
-		)..repeat(reverse: true);
-
-		_bgAlignmentAnimation = AlignmentTween(
-			begin: Alignment.topLeft,
-			end: Alignment.bottomRight,
-		).animate(
-				CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-		_floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-				CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
 
 		context.read<GroupBloc>().add(FetchGroupDetail(widget.group.id));
 	}
@@ -59,7 +44,6 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 	@override
 	void dispose() {
 		_tabController.dispose();
-		_ambientController.dispose();
 		super.dispose();
 	}
 
@@ -71,53 +55,40 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 				return true;
 			},
 			child: Scaffold(
-			body: AnimatedBuilder(
-				animation: _ambientController,
-				builder: (context, child) {
-					return Container(
-						height: MediaQuery.of(context).size.height,
-						decoration: BoxDecoration(
-							gradient: LinearGradient(
-								begin: _bgAlignmentAnimation.value,
-								end: Alignment.bottomRight,
-								colors: AppColors.backgroundGradient.colors,
+				body: Container(
+					height: MediaQuery.of(context).size.height,
+					decoration: BoxDecoration(
+						gradient: AppTheme.getBackgroundGradient(context),
+					),
+					child: Stack(
+						children: [
+							Positioned(
+								top: -120,
+								right: -80,
+								child: Container(
+									width: 220,
+									height: 220,
+									decoration: BoxDecoration(
+										shape: BoxShape.circle,
+										color: AppColors.mint.withOpacity(0.45),
+									),
+								),
 							),
-						),
-						child: Stack(
-							children: [
-								Positioned(
-									top: -120,
-									right: -80,
-									child: Transform.translate(
-										offset: Offset(0, _floatAnimation.value),
-										child: Container(
-											width: 220,
-											height: 220,
-											decoration: BoxDecoration(
-												shape: BoxShape.circle,
-												color: AppColors.mint.withOpacity(0.45),
-											),
-										),
+							Positioned(
+								bottom: -140,
+								left: -60,
+								child: Container(
+									width: 260,
+									height: 260,
+									decoration: BoxDecoration(
+										shape: BoxShape.circle,
+										color: AppColors.secondaryEmerald.withOpacity(0.6),
 									),
 								),
-								Positioned(
-									bottom: -140,
-									left: -60,
-									child: Transform.translate(
-										offset: Offset(0, -_floatAnimation.value),
-										child: Container(
-											width: 260,
-											height: 260,
-											decoration: BoxDecoration(
-												shape: BoxShape.circle,
-												color: AppColors.secondaryEmerald.withOpacity(0.6),
-											),
-										),
-									),
-								),
-								SafeArea(
-									child: BlocBuilder<GroupBloc, GroupState>(
-										builder: (context, state) {
+							),
+							SafeArea(
+								child: BlocBuilder<GroupBloc, GroupState>(
+									builder: (context, state) {
 											if (state is GroupLoading) {
 												return const Center(
 													child: CircularProgressIndicator(
@@ -140,8 +111,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 															Text(
 																state.message,
 																textAlign: TextAlign.center,
-																style: const TextStyle(
-																	color: AppColors.textSecondary,
+																style: TextStyle(
+																	color: AppTheme.getSubtitleStyle(context).color,
 																	fontSize: 14,
 																),
 															),
@@ -181,18 +152,16 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 																				context.read<GroupBloc>().add(FetchGroups());
 																				Navigator.pop(context);
 																			},
-																			icon: const Icon(
+																			icon: Icon(
 																				Icons.arrow_back_ios_new,
-																				color: AppColors.navyDark,
+																				color: AppTheme.getTextPrimaryColor(context),
 																			),
 																		),
 																		const SizedBox(width: 4),
 																		Text(
 																			widget.group.name,
-																			style: const TextStyle(
-																				color: AppColors.navyDark,
+																			style: AppTheme.getTitleStyle(context).copyWith(
 																				fontSize: 24,
-																				fontWeight: FontWeight.bold,
 																			),
 																		),
 																			const Spacer(),
@@ -239,8 +208,6 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 								),
 							],
 						),
-					);
-				},
 			),
 			floatingActionButton: BlocBuilder<GroupBloc, GroupState>(
 				builder: (context, state) {
@@ -291,18 +258,17 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 						child: Column(
 							crossAxisAlignment: CrossAxisAlignment.start,
 							children: [
-								const Text(
+								Text(
 									'Total Fund',
-									style: TextStyle(
-										color: AppColors.textSecondary,
+									style: AppTheme.getSubtitleStyle(context).copyWith(
 										fontSize: 12,
 									),
 								),
 								const SizedBox(height: 4),
 								Text(
 									'${FormatHelper.formatCurrencyWithSymbol(totalFund, symbol: ' VND')}',
-									style: const TextStyle(
-										color: AppColors.navyDark,
+									style: TextStyle(
+										color: AppTheme.getTextPrimaryColor(context),
 										fontSize: 18,
 										fontWeight: FontWeight.bold,
 									),
@@ -341,8 +307,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 									Expanded(
 										child: Text(
 											transaction.category?.name ?? 'Uncategorized',
-											style: const TextStyle(
-												color: AppColors.navyDark,
+											style: TextStyle(
+												color: AppTheme.getTextPrimaryColor(context),
 												fontSize: 14,
 												fontWeight: FontWeight.bold,
 											),
@@ -373,10 +339,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							if (transaction.note != null && transaction.note!.isNotEmpty)
 								Text(
 									transaction.note!,
-									style: const TextStyle(
-										color: AppColors.textSecondary,
-										fontSize: 12,
-									),
+											style: TextStyle(
+												color: AppTheme.getSubtitleStyle(context).color,
+												fontSize: 12,
+											),
 								),
 							const SizedBox(height: 8),
 							Row(
@@ -384,17 +350,17 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 								children: [
 									Text(
 										transaction.creatorName,
-										style: const TextStyle(
-											color: AppColors.textSecondary,
-											fontSize: 11,
-										),
+											style: TextStyle(
+												color: AppTheme.getSubtitleStyle(context).color,
+												fontSize: 11,
+											),
 									),
 									Text(
 										date,
-										style: const TextStyle(
-											color: AppColors.textSecondary,
-											fontSize: 11,
-										),
+											style: TextStyle(
+												color: AppTheme.getSubtitleStyle(context).color,
+												fontSize: 11,
+											),
 									),
 								],
 							),
@@ -457,10 +423,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 			child: Column(
 				crossAxisAlignment: CrossAxisAlignment.start,
 				children: [
-					const Text(
+					Text(
 						'Spending Summary',
-						style: TextStyle(
-							color: AppColors.textSecondary,
+						style: AppTheme.getSubtitleStyle(context).copyWith(
 							fontSize: 12,
 							fontWeight: FontWeight.w600,
 						),
@@ -472,10 +437,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							Column(
 								crossAxisAlignment: CrossAxisAlignment.start,
 								children: [
-									const Text(
+									Text(
 										'Total Spent',
-										style: TextStyle(
-											color: AppColors.textSecondary,
+										style: AppTheme.getSubtitleStyle(context).copyWith(
 											fontSize: 11,
 										),
 									),
@@ -492,10 +456,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							Column(
 								crossAxisAlignment: CrossAxisAlignment.end,
 								children: [
-									const Text(
+									Text(
 										'Remaining',
-										style: TextStyle(
-											color: AppColors.textSecondary,
+										style: AppTheme.getSubtitleStyle(context).copyWith(
 											fontSize: 11,
 										),
 									),
@@ -514,7 +477,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 					const SizedBox(height: 12),
 					LinearProgressIndicator(
 						value: percentUsed / 100,
-						backgroundColor: Colors.grey.shade300,
+						backgroundColor: AppTheme.getSurfaceColor(context).withOpacity(0.6),
 						valueColor: AlwaysStoppedAnimation<Color>(
 							percentUsed > 100 ? AppColors.expense : AppColors.primaryEmerald,
 						),
@@ -524,10 +487,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 					const SizedBox(height: 8),
 					Text(
 						'${percentUsed.toStringAsFixed(1)}% of budget used',
-						style: const TextStyle(
-							color: AppColors.textSecondary,
-							fontSize: 11,
-						),
+						style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 11),
 					),
 				],
 			),
@@ -684,7 +644,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 			builder: (context) {
 				return Container(
 					decoration: BoxDecoration(
-						color: Colors.white.withOpacity(0.95),
+						color: AppTheme.getModalBackgroundColor(context),
 						borderRadius: const BorderRadius.only(
 							topLeft: Radius.circular(32),
 							topRight: Radius.circular(32),
@@ -703,23 +663,20 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 								mainAxisSize: MainAxisSize.min,
 								crossAxisAlignment: CrossAxisAlignment.start,
 								children: [
-									const Text(
+									Text(
 										'Update Total Fund',
-										style: TextStyle(
-											color: AppColors.textPrimary,
-											fontSize: 22,
-											fontWeight: FontWeight.bold,
-										),
+										style: AppTheme.getTitleStyle(context).copyWith(fontSize: 22),
 									),
 									const SizedBox(height: 20),
 									TextFormField(
 										controller: controller,
 										keyboardType: TextInputType.number,
+										style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
 										decoration: InputDecoration(
 											labelText: 'Total fund',
 											hintText: '0.00',
 											filled: true,
-											fillColor: AppColors.surface.withOpacity(0.5),
+											fillColor: AppTheme.getSurfaceColor(context).withOpacity(0.5),
 											border: OutlineInputBorder(
 												borderRadius: BorderRadius.circular(12),
 												borderSide: BorderSide.none,
@@ -825,7 +782,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 			builder: (context) {
 				return Container(
 					decoration: BoxDecoration(
-						color: Colors.white.withOpacity(0.95),
+						color: AppTheme.getModalBackgroundColor(context),
 						borderRadius: const BorderRadius.only(
 							topLeft: Radius.circular(32),
 							topRight: Radius.circular(32),
@@ -844,22 +801,19 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 								mainAxisSize: MainAxisSize.min,
 								crossAxisAlignment: CrossAxisAlignment.start,
 								children: [
-									const Text(
+									Text(
 										'Create Category',
-										style: TextStyle(
-											color: AppColors.textPrimary,
-											fontSize: 22,
-											fontWeight: FontWeight.bold,
-										),
+										style: AppTheme.getTitleStyle(context).copyWith(fontSize: 22),
 									),
 									const SizedBox(height: 20),
 									TextFormField(
 										controller: nameController,
+										style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
 										decoration: InputDecoration(
 											labelText: 'Category name',
 											hintText: 'e.g. Food',
 											filled: true,
-											fillColor: AppColors.surface.withOpacity(0.5),
+											fillColor: AppTheme.getSurfaceColor(context).withOpacity(0.5),
 											border: OutlineInputBorder(
 												borderRadius: BorderRadius.circular(12),
 												borderSide: BorderSide.none,
@@ -967,7 +921,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 					filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
 					child: Container(
 						decoration: BoxDecoration(
-							color: Colors.white.withOpacity(0.95),
+							color: AppTheme.getModalBackgroundColor(context),
 							borderRadius: const BorderRadius.only(
 								topLeft: Radius.circular(32),
 								topRight: Radius.circular(32),
@@ -989,16 +943,15 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 										Row(
 											mainAxisAlignment: MainAxisAlignment.spaceBetween,
 											children: [
-												const Text(
+												Text(
 													'Edit Category',
-													style: TextStyle(
-														color: AppColors.textPrimary,
-														fontSize: 22,
-														fontWeight: FontWeight.bold,
-													),
+													style: AppTheme.getTitleStyle(context).copyWith(fontSize: 22),
 												),
 												IconButton(
-													icon: const Icon(Icons.close, color: AppColors.textPrimary),
+													icon: Icon(
+														Icons.close,
+														color: AppTheme.getTextPrimaryColor(context),
+													),
 													onPressed: () => Navigator.pop(context),
 												),
 											],
@@ -1063,7 +1016,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 					child: Container(
 						padding: const EdgeInsets.all(24),
 						decoration: BoxDecoration(
-							color: Colors.white.withOpacity(0.95),
+							color: AppTheme.getModalBackgroundColor(context),
 							borderRadius: const BorderRadius.only(
 								topLeft: Radius.circular(32),
 								topRight: Radius.circular(32),
@@ -1073,22 +1026,18 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							mainAxisSize: MainAxisSize.min,
 							crossAxisAlignment: CrossAxisAlignment.start,
 							children: [
-								const Text(
+								Text(
 									'Delete Category',
-									style: TextStyle(
-										color: AppColors.textPrimary,
-										fontSize: 20,
-										fontWeight: FontWeight.bold,
-									),
+									style: AppTheme.getTitleStyle(context).copyWith(fontSize: 20),
 								),
 								const SizedBox(height: 12),
 								Text(
 									'Remove ${category.name} from group categories? All transactions in this category will remain but become uncategorized.',
-									style: const TextStyle(
-										color: AppColors.textSecondary,
-										fontSize: 14,
-										height: 1.4,
-									),
+										style: TextStyle(
+											color: AppTheme.getSubtitleStyle(context).color,
+											fontSize: 14,
+											height: 1.4,
+										),
 								),
 								const SizedBox(height: 24),
 								Row(
@@ -1097,7 +1046,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 											child: OutlinedButton(
 												onPressed: () => Navigator.pop(context),
 												style: OutlinedButton.styleFrom(
-													side: BorderSide(color: AppColors.textSecondary.withOpacity(0.4)),
+													side: BorderSide(
+														color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+													),
 													padding: const EdgeInsets.symmetric(vertical: 12),
 													shape: RoundedRectangleBorder(
 														borderRadius: BorderRadius.circular(12),
@@ -1153,14 +1104,16 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 			inputFormatters: keyboardType == TextInputType.number
 				? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
 				: [],
-			style: const TextStyle(color: AppColors.textPrimary),
+			style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
 			decoration: InputDecoration(
 				labelText: label,
 				hintText: hint,
-				labelStyle: const TextStyle(color: AppColors.textSecondary),
-				hintStyle: const TextStyle(color: AppColors.textSecondary),
-				enabledBorder: const UnderlineInputBorder(
-					borderSide: BorderSide(color: Colors.black12),
+				labelStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
+				hintStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
+				enabledBorder: UnderlineInputBorder(
+					borderSide: BorderSide(
+						color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+					),
 				),
 				focusedBorder: const UnderlineInputBorder(
 					borderSide: BorderSide(color: AppColors.primaryEmerald, width: 2),
@@ -1257,9 +1210,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 				filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
 				child: Container(
 					decoration: BoxDecoration(
-						color: Colors.white.withOpacity(0.7),
+						color: AppTheme.getSurfaceColor(context).withOpacity(0.7),
 						borderRadius: BorderRadius.circular(25),
-						border: Border.all(color: Colors.white.withOpacity(0.4)),
+						border: Border.all(
+							color: AppTheme.getSurfaceColor(context).withOpacity(0.4),
+						),
 					),
 					child: TabBar(
 						controller: _tabController,
@@ -1268,7 +1223,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							borderRadius: BorderRadius.circular(25),
 						),
 						labelColor: Colors.white,
-						unselectedLabelColor: AppColors.textSecondary,
+						unselectedLabelColor:
+							AppTheme.getSubtitleStyle(context).color,
 						labelStyle: const TextStyle(
 							fontSize: 14,
 							fontWeight: FontWeight.bold,
@@ -1301,10 +1257,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 							color: AppColors.primaryEmerald.withOpacity(0.5),
 						),
 						const SizedBox(height: 12),
-						const Text(
+						Text(
 							'No categories yet',
 							style: TextStyle(
-								color: AppColors.textSecondary,
+								color: AppTheme.getSubtitleStyle(context).color,
 								fontSize: 16,
 							),
 						),
@@ -1332,7 +1288,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 						TextButton.icon(
 							onPressed: _showCreateCategoryModal,
 							icon: const Icon(Icons.add, size: 18, color: AppColors.primaryEmerald),
-							label: const Text('Add', style: TextStyle(color: AppColors.primaryEmerald)),
+							label: const Text(
+								'Add',
+								style: TextStyle(color: AppColors.primaryEmerald),
+							),
 						),
 					],
 				),
@@ -1347,7 +1306,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 					
 					Color statusColor = AppColors.primaryEmerald;
 					if (limit <= 0) {
-						statusColor = AppColors.textSecondary;
+						statusColor = AppTheme.getSubtitleStyle(context).color ?? AppColors.textSecondary;
 					} else if (percentRemaining < 15) {
 						statusColor = AppColors.expense;
 					} else if (percentRemaining < 50) {
@@ -1364,8 +1323,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 									padding: const EdgeInsets.all(20),
 									decoration: BoxDecoration(
 										borderRadius: BorderRadius.circular(20),
-										color: Colors.white.withOpacity(0.85),
-										border: Border.all(color: Colors.white.withOpacity(0.7)),
+										color: AppTheme.getCardColor(context),
+										border: Border.all(
+											color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+										),
 										boxShadow: [
 											BoxShadow(
 												color: Colors.black.withOpacity(0.08),
@@ -1395,8 +1356,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 													Expanded(
 														child: Text(
 															category.name,
-															style: const TextStyle(
-																color: AppColors.navyDark,
+															style: TextStyle(
+																color: AppTheme.getTextPrimaryColor(context),
 																fontSize: 16,
 																fontWeight: FontWeight.bold,
 															),
@@ -1427,12 +1388,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 													Column(
 														crossAxisAlignment: CrossAxisAlignment.start,
 														children: [
-															const Text(
+															Text(
 																'Remaining',
-																style: TextStyle(
-																	color: AppColors.textSecondary,
-																	fontSize: 12,
-																),
+																style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 12),
 															),
 															const SizedBox(height: 4),
 															Text(
@@ -1450,18 +1408,15 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 													Column(
 														crossAxisAlignment: CrossAxisAlignment.end,
 														children: [
-															const Text(
+															Text(
 																'Spent / Total',
-																style: TextStyle(
-																	color: AppColors.textSecondary,
-																	fontSize: 12,
-																),
+																style: AppTheme.getSubtitleStyle(context).copyWith(fontSize: 12),
 															),
 															const SizedBox(height: 4),
 															Text(
 																'${FormatHelper.formatCurrency(spent)} / ${FormatHelper.formatCurrency(limit)}',
-																style: const TextStyle(
-																	color: AppColors.textPrimary,
+																style: TextStyle(
+																	color: AppTheme.getTextPrimaryColor(context),
 																	fontSize: 14,
 																	fontWeight: FontWeight.w600,
 																),
@@ -1475,7 +1430,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 												borderRadius: BorderRadius.circular(8),
 												child: LinearProgressIndicator(
 													value: percentRemaining / 100,
-													backgroundColor: AppColors.textSecondary.withOpacity(0.2),
+														backgroundColor: AppTheme.getSurfaceColor(context).withOpacity(0.3),
 													valueColor: AlwaysStoppedAnimation<Color>(statusColor),
 													minHeight: 10,
 												),
@@ -1511,7 +1466,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 						IconButton(
 							icon: Icon(
 								_hasActiveFilters() ? Icons.filter_alt : Icons.filter_alt_outlined,
-								color: _hasActiveFilters() ? AppColors.primaryEmerald : AppColors.textSecondary,
+								color: _hasActiveFilters()
+									? AppColors.primaryEmerald
+									: AppTheme.getSubtitleStyle(context).color,
 							),
 							onPressed: _showFilterDialog,
 						),
@@ -1529,10 +1486,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
 											color: AppColors.primaryEmerald.withOpacity(0.5),
 										),
 										const SizedBox(height: 12),
-										const Text(
+										Text(
 											'No transactions yet',
 											style: TextStyle(
-												color: AppColors.textSecondary,
+												color: AppTheme.getSubtitleStyle(context).color,
 												fontSize: 16,
 											),
 										),

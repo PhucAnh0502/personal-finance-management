@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -64,8 +65,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
         },
         builder: (context, state) {
           return Container(
-            decoration: const BoxDecoration(
-              gradient: AppColors.backgroundGradient,
+            decoration: BoxDecoration(
+              gradient: AppTheme.getBackgroundGradient(context),
             ),
             child: Center(
               child: SingleChildScrollView(
@@ -80,8 +81,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                         padding: const EdgeInsets.all(24.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
-                          color: Colors.white.withOpacity(0.82),
-                          border: Border.all(color: Colors.white.withOpacity(0.7)),
+                          color: AppTheme.getModalBackgroundColor(context).withOpacity(0.9),
+                          border: Border.all(
+                            color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.08),
@@ -93,29 +96,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               'Forgot your password?',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
+                              style: AppTheme.getTitleStyle(context),
                             ),
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'Enter your email to receive a reset link',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(
+                                color: AppTheme.getSubtitleStyle(context).color,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 24),
                             NeumorphicContainer(
                               child: TextField(
                                 controller: _emailController,
-                                style: const TextStyle(color: AppColors.textPrimary),
-                                decoration: const InputDecoration(
+                                style: TextStyle(
+                                  color: AppTheme.getTextPrimaryColor(context),
+                                ),
+                                decoration: InputDecoration(
                                   hintText: 'Email',
-                                  hintStyle: TextStyle(color: AppColors.textSecondary),
-                                  prefixIcon: Icon(Icons.email, color: AppColors.textPrimary),
+                                  hintStyle: TextStyle(
+                                    color: AppTheme.getSubtitleStyle(context).color,
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.email,
+                                    color: AppTheme.getTextPrimaryColor(context),
+                                  ),
                                   border: InputBorder.none,
                                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 ),
@@ -162,9 +170,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Single
                             const SizedBox(height: 16),
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text(
+                              child: Text(
                                 'Back to login',
-                                style: TextStyle(color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  color: AppTheme.getSubtitleStyle(context).color,
+                                ),
                               ),
                             ),
                           ],

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/budget_bloc/budget_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/budget_model.dart';
 import 'package:pmf_app/presentation/features/budget/add_budget_screen.dart';
@@ -16,86 +17,53 @@ class BudgetScreen extends StatefulWidget {
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
 
-class _BudgetScreenState extends State<BudgetScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
-
+class _BudgetScreenState extends State<BudgetScreen> {
   @override
   void initState() {
     super.initState();
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation = AlignmentTween(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
     // Fetch budgets for current month
     context.read<BudgetBloc>().add(FetchBudgetsEvent(DateTime.now()));
   }
 
   @override
   void dispose() {
-    _ambientController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.getAccentMintColor(context).withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -140,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primaryEmerald.withOpacity(0.2),
                 ),
-                Positioned(
-                  bottom: -140,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
+              ),
+            ),
+            SafeArea(
                   child: BlocBuilder<BudgetBloc, BudgetState>(
                     builder: (context, state) {
                       if (state is BudgetLoading) {
@@ -130,9 +98,7 @@ class _BudgetScreenState extends State<BudgetScreen>
                 ),
               ],
             ),
-          );
-        },
-      ),
+          ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddExpenseScreen,
         backgroundColor: AppColors.primaryEmerald,
@@ -152,13 +118,9 @@ class _BudgetScreenState extends State<BudgetScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           floating: true,
-          title: const Text(
+          title: Text(
             'Budget Management',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
+            style: AppTheme.getTitleStyle(context),
           ),
           centerTitle: false,
         ),
@@ -171,13 +133,9 @@ class _BudgetScreenState extends State<BudgetScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Budget Allocations',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTheme.getHeading2Style(context),
                   ),
                   TextButton.icon(
                     onPressed: _openAddBudgetScreen,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/auth_bloc/auth_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 
 class ResetPasswordArgs {
@@ -73,8 +74,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         },
         builder: (context, state) {
           return Container(
-            decoration: const BoxDecoration(
-              gradient: AppColors.backgroundGradient,
+            decoration: BoxDecoration(
+              gradient: AppTheme.getBackgroundGradient(context),
             ),
             child: Center(
               child: SingleChildScrollView(
@@ -87,8 +88,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       padding: const EdgeInsets.all(24.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(28),
-                        color: Colors.white.withOpacity(0.82),
-                        border: Border.all(color: Colors.white.withOpacity(0.7)),
+                        color: AppTheme.getModalBackgroundColor(context).withOpacity(0.9),
+                        border: Border.all(
+                          color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.08),
@@ -100,18 +103,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Set a new password',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: AppTheme.getTitleStyle(context),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Your new password must be different from the old one',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(
+                              color: AppTheme.getSubtitleStyle(context).color,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
@@ -119,15 +120,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             child: TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: TextStyle(
+                                color: AppTheme.getTextPrimaryColor(context),
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'New password',
-                                hintStyle: const TextStyle(color: AppColors.textSecondary),
-                                prefixIcon: const Icon(Icons.lock, color: AppColors.textPrimary),
+                                hintStyle: TextStyle(
+                                  color: AppTheme.getSubtitleStyle(context).color,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: AppTheme.getTextPrimaryColor(context),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                    color: AppColors.textSecondary,
+                                    color: AppTheme.getSubtitleStyle(context).color,
                                   ),
                                   onPressed: () => setState(() {
                                     _obscurePassword = !_obscurePassword;
@@ -143,15 +151,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             child: TextField(
                               controller: _confirmController,
                               obscureText: _obscureConfirm,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: TextStyle(
+                                color: AppTheme.getTextPrimaryColor(context),
+                              ),
                               decoration: InputDecoration(
                                 hintText: 'Confirm password',
-                                hintStyle: const TextStyle(color: AppColors.textSecondary),
-                                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textPrimary),
+                                hintStyle: TextStyle(
+                                  color: AppTheme.getSubtitleStyle(context).color,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: AppTheme.getTextPrimaryColor(context),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscureConfirm ? Icons.visibility : Icons.visibility_off,
-                                    color: AppColors.textSecondary,
+                                    color: AppTheme.getSubtitleStyle(context).color,
                                   ),
                                   onPressed: () => setState(() {
                                     _obscureConfirm = !_obscureConfirm;

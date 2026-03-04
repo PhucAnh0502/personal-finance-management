@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/transaction_bloc/transaction_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/transaction_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,29 +16,11 @@ class TransactionListScreen extends StatefulWidget {
   State<TransactionListScreen> createState() => _TransactionListScreenState();
 }
 
-class _TransactionListScreenState extends State<TransactionListScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
+class _TransactionListScreenState extends State<TransactionListScreen> {
 
   @override
   void initState() {
     super.initState();
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation = AlignmentTween(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
     _loadTransactions();
   }
 
@@ -59,95 +42,79 @@ class _TransactionListScreenState extends State<TransactionListScreen>
 
   @override
   void dispose() {
-    _ambientController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -140,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryEmerald.withOpacity(0.6),
                 ),
-                Positioned(
-                  bottom: -140,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: BlocBuilder<TransactionBloc, TransactionState>(
-                    builder: (context, state) {
-                      if (state is TransactionLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryEmerald,
-                          ),
-                        );
-                      }
-
-                      if (state is TransactionFailure) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Text(
-                              'Error: ${state.error}',
-                              style: const TextStyle(
-                                color: AppColors.expense,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (state is TransactionLoaded) {
-                        return _buildTransactionList(state);
-                      }
-
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+            SafeArea(
+              child: BlocBuilder<TransactionBloc, TransactionState>(
+                builder: (context, state) {
+                  if (state is TransactionLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryEmerald,
+                      ),
+                    );
+                  }
+
+                  if (state is TransactionFailure) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text(
+                          'Error: ${state.error}',
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (state is TransactionLoaded) {
+                    return _buildTransactionList(state);
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -159,13 +126,9 @@ class _TransactionListScreenState extends State<TransactionListScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           floating: true,
-          title: const Text(
+          title: Text(
             'Transaction History',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-            ),
+            style: AppTheme.getTitleStyle(context),
           ),
           centerTitle: false,
         ),
@@ -204,8 +167,10 @@ class _TransactionListScreenState extends State<TransactionListScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: Colors.white.withOpacity(0.85),
-              border: Border.all(color: Colors.white.withOpacity(0.7)),
+              color: AppTheme.getCardColor(context),
+              border: Border.all(
+                color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.08),
@@ -237,8 +202,8 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                     children: [
                       Text(
                         transaction.categoryName ?? 'Unknown',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: AppTheme.getTextPrimaryColor(context),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -246,8 +211,8 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                       const SizedBox(height: 4),
                       Text(
                         transaction.note ?? 'No note',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: AppTheme.getSubtitleStyle(context).color,
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -256,8 +221,8 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                       const SizedBox(height: 4),
                       Text(
                         dateFormat.format(transaction.transactionDate),
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: AppTheme.getSubtitleStyle(context).color,
                           fontSize: 11,
                         ),
                       ),
@@ -294,7 +259,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.96),
+              color: AppTheme.getModalBackgroundColor(context).withOpacity(0.94),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -318,11 +283,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                   const SizedBox(height: 16),
                   Text(
                     transaction.categoryName ?? 'Transaction Details',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTheme.getTitleStyle(context).copyWith(fontSize: 20),
                   ),
                   const SizedBox(height: 16),
                   _buildDetailRow('Type', isIncome ? 'Income' : 'Expense'),
@@ -335,10 +296,9 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                   _buildDetailRow('Note', transaction.note ?? 'No note'),
                   if (receiptUrl != null && receiptUrl.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Receipt',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
+                      style: AppTheme.getHeading2Style(context).copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -356,9 +316,11 @@ class _TransactionListScreenState extends State<TransactionListScreen>
                             height: 160,
                             color: Colors.black12,
                             alignment: Alignment.center,
-                            child: const Text(
+                            child: Text(
                               'Failed to load receipt',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(
+                                color: AppTheme.getSubtitleStyle(context).color,
+                              ),
                             ),
                           );
                         },
@@ -388,8 +350,8 @@ class _TransactionListScreenState extends State<TransactionListScreen>
             width: 80,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: AppTheme.getSubtitleStyle(context).color,
                 fontSize: 13,
               ),
             ),
@@ -398,7 +360,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
             child: Text(
               value,
               style: TextStyle(
-                color: valueColor ?? AppColors.textPrimary,
+                color: valueColor ?? AppTheme.getTextPrimaryColor(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -414,24 +376,26 @@ class _TransactionListScreenState extends State<TransactionListScreen>
       margin: const EdgeInsets.only(top: 100),
       padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black12),
+        border: Border.all(
+          color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+        ),
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withOpacity(0.75),
+        color: AppTheme.getCardColor(context),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           children: [
             Icon(
               Icons.receipt_long_outlined,
               size: 64,
-              color: AppColors.textSecondary,
+              color: AppTheme.getSubtitleStyle(context).color,
             ),
             SizedBox(height: 16),
             Text(
               'No transactions yet',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppTheme.getTextPrimaryColor(context),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -441,7 +405,7 @@ class _TransactionListScreenState extends State<TransactionListScreen>
               'Start tracking your spending by adding transactions',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: AppTheme.getSubtitleStyle(context).color,
                 height: 1.5,
                 fontSize: 14,
               ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/bloc/asset_bloc/asset_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/data/models/asset_model.dart';
 
@@ -13,165 +14,130 @@ class AssetScreen extends StatefulWidget {
   State<AssetScreen> createState() => _AssetScreenState();
 }
 
-class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin {
-  late AnimationController _ambientController;
-  late Animation<Alignment> _bgAlignmentAnimation;
-  late Animation<double> _floatAnimation;
-
+class _AssetScreenState extends State<AssetScreen> {
   @override
   void initState() {
     super.initState();
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat(reverse: true);
-
-    _bgAlignmentAnimation = AlignmentTween(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
-    _floatAnimation = Tween<double>(begin: -14, end: 14).animate(
-        CurvedAnimation(parent: _ambientController, curve: Curves.easeInOut));
-
     context.read<AssetBloc>().add(FetchAssetEvent());
   }
 
   @override
   void dispose() {
-    _ambientController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _ambientController,
-        builder: (context, child) {
-          return Container(
-            height: MediaQuery.of(context).size.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: _bgAlignmentAnimation.value,
-                end: Alignment.bottomRight,
-                colors: AppColors.backgroundGradient.colors,
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getBackgroundGradient(context),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -80,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.mint.withOpacity(0.45),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -80,
-                  child: Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Container(
-                      width: 220,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.mint.withOpacity(0.45),
-                      ),
-                    ),
-                  ),
+            Positioned(
+              bottom: -140,
+              left: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.secondaryEmerald.withOpacity(0.6),
                 ),
-                Positioned(
-                  bottom: -140,
-                  left: -60,
-                  child: Transform.translate(
-                    offset: Offset(0, -_floatAnimation.value),
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondaryEmerald.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: BlocBuilder<AssetBloc, AssetState>(
-                    builder: (context, state) {
-                      if (state is AssetLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryEmerald,
-                          ),
-                        );
-                      }
-
-                      if (state is AssetError) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.redAccent,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Error: ${state.error}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  context.read<AssetBloc>().add(FetchAssetEvent());
-                                },
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (state is AssetLoaded) {
-                        return SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Assets',
-                                      style: TextStyle(
-                                        color: AppColors.navyDark,
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    _buildTotalValueCard(state.totalValue, state.assets),
-                                    const SizedBox(height: 28),
-                                    _buildAssetList(state.assets),
-                                    const SizedBox(height: 40),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+            SafeArea(
+              child: BlocBuilder<AssetBloc, AssetState>(
+                builder: (context, state) {
+                  if (state is AssetLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryEmerald,
+                      ),
+                    );
+                  }
+
+                  if (state is AssetError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.redAccent,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error: ${state.error}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppTheme.getTextPrimaryColor(context),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              context.read<AssetBloc>().add(FetchAssetEvent());
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (state is AssetLoaded) {
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Assets',
+                                  style: AppTheme.getHeading2Style(context),
+                                ),
+                                const SizedBox(height: 20),
+                                _buildTotalValueCard(
+                                  state.totalValue,
+                                  state.assets,
+                                ),
+                                const SizedBox(height: 28),
+                                _buildAssetList(context, state.assets),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddAssetModal(),
@@ -210,7 +176,7 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
               Text(
                 'Total Portfolio Value',
                 style: TextStyle(
-                  color: AppColors.navyDark,
+                  color: AppTheme.getTextPrimaryColor(context),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -240,7 +206,7 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildAssetList(List<AssetModel> assets) {
+  Widget _buildAssetList(BuildContext context, List<AssetModel> assets) {
     if (assets.isEmpty) {
       return Center(
         child: Column(
@@ -252,18 +218,18 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
               size: 48,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No assets yet',
               style: TextStyle(
-                color: Colors.white70,
+                color: AppTheme.getTextPrimaryColor(context),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Add your first asset to get started',
               style: TextStyle(
-                color: Colors.white54,
+                color: AppTheme.getSubtitleStyle(context).color,
                 fontSize: 12,
               ),
             ),
@@ -273,11 +239,11 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
     }
 
     return Column(
-      children: assets.map((asset) => _buildAssetCard(asset)).toList(),
+      children: assets.map((asset) => _buildAssetCard(context, asset)).toList(),
     );
   }
 
-  Widget _buildAssetCard(AssetModel asset) {
+  Widget _buildAssetCard(BuildContext context, AssetModel asset) {
     final profitLoss = asset.profitLoss;
     final isProfit = profitLoss >= 0;
     final totalValue = asset.totalValue;
@@ -311,8 +277,8 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
                             children: [
                               Text(
                                 asset.assetName,
-                                style: const TextStyle(
-                                  color: AppColors.navyDark,
+                                style: TextStyle(
+                                  color: AppTheme.getTextPrimaryColor(context),
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -354,14 +320,32 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildAssetInfo('Quantity', asset.quantity.toString()),
-                        _buildAssetInfo('Buy Price', FormatHelper.formatCurrencyWithSymbol(asset.purchasePrice, symbol: ' VND')),
-                        _buildAssetInfo('Current Price', FormatHelper.formatCurrencyWithSymbol(asset.currentPrice, symbol: ' VND')),
-                      ],
-                    ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildAssetInfo(
+                            context,
+                            'Quantity',
+                            asset.quantity.toString(),
+                          ),
+                          _buildAssetInfo(
+                            context,
+                            'Buy Price',
+                            FormatHelper.formatCurrencyWithSymbol(
+                              asset.purchasePrice,
+                              symbol: ' VND',
+                            ),
+                          ),
+                          _buildAssetInfo(
+                            context,
+                            'Current Price',
+                            FormatHelper.formatCurrencyWithSymbol(
+                              asset.currentPrice,
+                              symbol: ' VND',
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -423,14 +407,18 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildAssetInfo(String label, String value) {
+  Widget _buildAssetInfo(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.navyDark,
+          style: TextStyle(
+            color: AppTheme.getSubtitleStyle(context).color,
             fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
@@ -438,8 +426,8 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
-            color: AppColors.navyDark,
+          style: TextStyle(
+            color: AppTheme.getTextPrimaryColor(context),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
@@ -466,7 +454,7 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: AppTheme.getModalBackgroundColor(context),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),
@@ -488,16 +476,15 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             "Add New Asset",
-                            style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold),
+                            style: AppTheme.getTitleStyle(context),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close,
-                                color: AppColors.textPrimary),
+                            icon: Icon(
+                              Icons.close,
+                              color: AppTheme.getTextPrimaryColor(context),
+                            ),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],
@@ -620,11 +607,14 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
         hintText: hint,
+        hintStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
         filled: true,
-        fillColor: AppColors.surface.withOpacity(0.5),
+        fillColor: AppTheme.getSurfaceColor(context).withOpacity(0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -645,51 +635,55 @@ class _AssetScreenState extends State<AssetScreen> with TickerProviderStateMixin
     List<String> options,
     Function(String) onChanged,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Asset Type',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: AppColors.surface.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.transparent,
+    return Builder(
+      builder: (context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Asset Type',
+              style: TextStyle(
+                color: AppTheme.getTextPrimaryColor(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          child: DropdownButton<String>(
-            isExpanded: true,
-            value: selectedValue,
-            underline: const SizedBox(),
-            items: options.map((option) {
-              return DropdownMenuItem<String>(
-                value: option,
-                child: Text(
-                  option,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                  ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.getSurfaceColor(context).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.transparent,
                 ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                onChanged(value);
-              }
-            },
-          ),
-        ),
-      ],
+              ),
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: selectedValue,
+                underline: const SizedBox(),
+                items: options.map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        color: AppTheme.getTextPrimaryColor(context),
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    onChanged(value);
+                  }
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

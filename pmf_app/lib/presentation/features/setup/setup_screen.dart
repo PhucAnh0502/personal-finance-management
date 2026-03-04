@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
 import 'package:pmf_app/core/utils/format_helper.dart';
 import 'package:pmf_app/presentation/shared/neumorphic_container.dart';
 import '../../../bloc/setup_bloc/setup_bloc.dart';
@@ -91,8 +92,8 @@ class _SetupScreenState extends State<SetupScreen>
           children: [
             // Animated gradient background
             Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.backgroundGradient,
+              decoration: BoxDecoration(
+                gradient: AppTheme.getBackgroundGradient(context),
               ),
             ),
             Positioned(
@@ -129,8 +130,9 @@ class _SetupScreenState extends State<SetupScreen>
                     children: [
                       LinearProgressIndicator(
                         value: (_currentStep + 1) / 2,
-                        backgroundColor:
-                            AppColors.textSecondary.withOpacity(0.2),
+                        backgroundColor: (AppTheme.getSubtitleStyle(context).color ??
+                                AppColors.textSecondary)
+                            .withOpacity(0.2),
                         color: AppColors.primaryEmerald,
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(10),
@@ -138,8 +140,9 @@ class _SetupScreenState extends State<SetupScreen>
                       const SizedBox(height: 10),
                       Text(
                         "Step ${_currentStep + 1} / 2",
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 12),
+                        style: AppTheme.getSubtitleStyle(context).copyWith(
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -163,8 +166,10 @@ class _SetupScreenState extends State<SetupScreen>
                 top: 50,
                 left: 20,
                 child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                      color: AppColors.textPrimary),
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      color: AppTheme.getTextPrimaryColor(context),
+                    ),
                   onPressed: _prevPage,
                 ),
               ),
@@ -181,26 +186,26 @@ class _SetupScreenState extends State<SetupScreen>
       child: Column(
         children: [
           const SizedBox(height: 20),
-          const Text(
+          Text(
             "Set up your profile",
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 28,
-                fontWeight: FontWeight.bold),
+            style: AppTheme.getTitleStyle(context).copyWith(fontSize: 28),
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             "Customize your account with a name and avatar",
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            style: AppTheme.getBodyStyle(context).copyWith(
+              color: AppTheme.getSubtitleStyle(context).color,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 50),
-          const Text(
+          Text(
             "Choose your avatar",
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500),
+            style: AppTheme.getHeading2Style(context).copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 20),
           Wrap(
@@ -243,25 +248,31 @@ class _SetupScreenState extends State<SetupScreen>
             }).toList(),
           ),
           const SizedBox(height: 50),
-          const Text(
+          Text(
             "Your name",
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500),
+            style: AppTheme.getHeading2Style(context).copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 15),
           NeumorphicContainer(
             child: TextField(
               controller: _nameController,
-                style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 16),
-              decoration: const InputDecoration(
+              style: TextStyle(
+                color: AppTheme.getTextPrimaryColor(context),
+                fontSize: 16,
+              ),
+              decoration: InputDecoration(
                 hintText: "Enter your display name",
-                hintStyle: TextStyle(color: AppColors.textSecondary),
+                hintStyle: TextStyle(
+                  color: AppTheme.getSubtitleStyle(context).color,
+                ),
                 border: InputBorder.none,
-                prefixIcon:
-                    Icon(Icons.person_outline, color: AppColors.primaryEmerald),
+                prefixIcon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primaryEmerald,
+                ),
                 contentPadding: EdgeInsets.symmetric(vertical: 15),
               ),
             ),
@@ -283,17 +294,17 @@ class _SetupScreenState extends State<SetupScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            const Text(
+            Text(
               "Financial Setup",
-              style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold),
+              style: AppTheme.getTitleStyle(context).copyWith(fontSize: 28),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               "Add your account balance and assets",
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: AppTheme.getBodyStyle(context).copyWith(
+                color: AppTheme.getSubtitleStyle(context).color,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 40),
             _buildSectionTitle("Account Balance"),
@@ -309,16 +320,22 @@ class _SetupScreenState extends State<SetupScreen>
                 style: const TextStyle(
                   color: AppColors.primaryEmerald,
                   fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   hintText: "0.00",
-                  hintStyle:
-                    TextStyle(color: AppColors.textSecondary.withOpacity(0.6)),
+                  hintStyle: TextStyle(
+                    color: (AppTheme.getSubtitleStyle(context).color ??
+                            AppColors.textSecondary)
+                        .withOpacity(0.6),
+                  ),
                   border: InputBorder.none,
                   suffixText: "VND",
-                  suffixStyle:
-                    const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                  suffixStyle: TextStyle(
+                    color: AppTheme.getSubtitleStyle(context).color,
+                    fontSize: 16,
+                  ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 20),
                 ),
                 validator: (value) {
@@ -383,10 +400,10 @@ class _SetupScreenState extends State<SetupScreen>
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 18,
-          fontWeight: FontWeight.w600),
+      style: AppTheme.getHeading2Style(context).copyWith(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
@@ -395,16 +412,21 @@ class _SetupScreenState extends State<SetupScreen>
       return Container(
         padding: const EdgeInsets.all(30),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black12),
+          border: Border.all(
+            color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+          ),
           borderRadius: BorderRadius.circular(16),
-          color: Colors.white.withOpacity(0.75),
+          color: AppTheme.getCardColor(context),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             "No assets yet.\nTap 'Add Asset' to get started.",
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: AppColors.textSecondary, height: 1.5, fontSize: 14),
+              color: AppTheme.getSubtitleStyle(context).color,
+              height: 1.5,
+              fontSize: 14,
+            ),
           ),
         ),
       );
@@ -420,9 +442,11 @@ class _SetupScreenState extends State<SetupScreen>
           padding: const EdgeInsets.only(bottom: 15),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.85),
+              color: AppTheme.getCardColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.7)),
+              border: Border.all(
+                color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.08),
@@ -452,16 +476,19 @@ class _SetupScreenState extends State<SetupScreen>
                       children: [
                         Text(
                           asset.assetName,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                          style: TextStyle(
+                            color: AppTheme.getTextPrimaryColor(context),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${asset.quantity} × ${FormatHelper.formatCurrency(asset.purchasePrice)} = ${FormatHelper.formatCurrencyWithSymbol(totalValue, symbol: ' VND')}',
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                            color: AppTheme.getSubtitleStyle(context).color,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -502,7 +529,7 @@ class _SetupScreenState extends State<SetupScreen>
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: AppTheme.getModalBackgroundColor(context),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),
@@ -524,16 +551,15 @@ class _SetupScreenState extends State<SetupScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             "Add New Asset",
-                            style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold),
+                            style: AppTheme.getTitleStyle(context),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close,
-                                color: AppColors.textPrimary),
+                            icon: Icon(
+                              Icons.close,
+                              color: AppTheme.getTextPrimaryColor(context),
+                            ),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],
@@ -659,17 +685,20 @@ class _SetupScreenState extends State<SetupScreen>
       inputFormatters: keyboardType == TextInputType.number
           ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
           : [],
-        style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.black12)),
+        labelStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
+        hintStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+          ),
+        ),
         focusedBorder: const UnderlineInputBorder(
-          borderSide:
-            BorderSide(color: AppColors.primaryEmerald, width: 2)),
+          borderSide: BorderSide(color: AppColors.primaryEmerald, width: 2),
+        ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -687,12 +716,14 @@ class _SetupScreenState extends State<SetupScreen>
   ) {
     return DropdownButtonFormField<String>(
       value: selectedValue,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
       decoration: InputDecoration(
         labelText: "Asset Type",
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.black12),
+        labelStyle: TextStyle(color: AppTheme.getSubtitleStyle(context).color),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: AppTheme.getSurfaceColor(context).withOpacity(0.6),
+          ),
         ),
         focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.primaryEmerald, width: 2),
@@ -704,7 +735,7 @@ class _SetupScreenState extends State<SetupScreen>
               value: option,
               child: Text(
                 option,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
               ),
             ),
           )

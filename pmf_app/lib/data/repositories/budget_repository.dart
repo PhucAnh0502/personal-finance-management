@@ -110,4 +110,20 @@ class BudgetRepository {
         .eq('id', categoryId)
         .eq('user_id', userId);
   }
+
+  Future<void> incrementUnallocatedAmount(double amount) async {
+    final userId = _client.auth.currentUser!.id;
+    final data = await _client
+        .from('budgets')
+        .select('unallocated_amount')
+        .eq('user_id', userId)
+        .single();
+
+    double currentUnallocated = (data['unallocated_amount'] as num).toDouble();
+
+    await _client
+        .from('budgets')
+        .update({'unallocated_amount': currentUnallocated + amount})
+        .eq('user_id', userId);
+  }
 }

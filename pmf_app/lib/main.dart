@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_notification_listener/flutter_notification_listener.dart';
 import 'package:pmf_app/core/constants/app_colors.dart';
+import 'package:pmf_app/core/services/bank_monitor_service.dart';
+import 'package:pmf_app/core/theme/app_theme.dart';
+import 'package:pmf_app/bloc/theme_cubit/theme_cubit.dart';
 import 'package:pmf_app/presentation/features/auth/login_screen.dart';
 import 'package:pmf_app/presentation/features/auth/register_screen.dart';
 import 'package:pmf_app/presentation/features/auth/forgot_password_screen.dart';
@@ -27,6 +30,7 @@ import 'package:pmf_app/data/repositories/asset_repository.dart';
 import 'package:pmf_app/bloc/asset_bloc/asset_bloc.dart';
 import 'package:pmf_app/presentation/features/budget/budget_screen.dart';
 import 'package:pmf_app/presentation/features/home/main_home_screen.dart';
+import 'package:pmf_app/presentation/features/notifications/notifications_screen.dart';
 import 'package:app_links/app_links.dart';
 
 void main() async {
@@ -38,6 +42,11 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
+  await BankMonitorService.initLocalNotifications();
+
+  NotificationsListener.initialize(callbackHandle: BankMonitorService.onNotificationEvent);
+  
   runApp(const MyApp());
 }
 
@@ -117,7 +126,7 @@ class _MyAppState extends State<MyApp> {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) => AuthBloc(context.read<AuthRepository>())..add(AuthCheckRequested()),
+            create: (context) => AuthBloc(context.read<AuthRepository>()),
           ),
           BlocProvider(
             create: (context) => SetupBloc(setupRepository: context.read<SetupRepository>()),
@@ -137,77 +146,50 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(
             create: (context) => AssetBloc(assetRepository: context.read<AssetRepository>()),
           ),
-        ],
-        child: MaterialApp(
-          navigatorKey: _navigatorKey,
-          debugShowCheckedModeBanner: false,
-          title: 'MoneyFlow',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.primaryEmerald,
-              brightness: Brightness.light,
-              primary: AppColors.primaryEmerald,
-              secondary: AppColors.secondaryEmerald,
-              background: AppColors.background,
-              surface: AppColors.surface,
-              error: AppColors.error,
-            ),
-            scaffoldBackgroundColor: AppColors.background,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.transparent,
-              foregroundColor: AppColors.textPrimary,
-              elevation: 0,
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: AppColors.primaryEmerald,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              ),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: AppColors.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            textTheme: GoogleFonts.poppinsTextTheme(
-              Theme.of(context).textTheme.apply(
-                bodyColor: AppColors.textPrimary,
-                displayColor: AppColors.textPrimary,
-              ),
-            ),
+          BlocProvider(
+            create: (context) => ThemeCubit(),
           ),
-          routes: {
-            '/login': (_) => const LoginScreen(),
-            '/register': (_) => const RegisterScreen(),
-            '/forgot-password': (_) => const ForgotPasswordScreen(),
-            '/reset-password': (_) => const ResetPasswordScreen(),
-            '/setup': (_) => const SetupScreen(),
-            '/budget': (_) => const BudgetScreen(),
-            '/home': (_) => const MainHomeScreen(),
+        ],
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          buildWhen: (previous, current) => previous.isDarkMode != current.isDarkMode,
+          builder: (context, themeState) {
+            return MaterialApp(
+              navigatorKey: _navigatorKey,
+              debugShowCheckedModeBanner: false,
+              title: 'MoneyFlow',
+              theme: AppTheme.lightTheme(context),
+              darkTheme: AppTheme.darkTheme(context),
+              themeMode: themeState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+              routes: {
+                '/login': (_) => const LoginScreen(),
+                '/register': (_) => const RegisterScreen(),
+                '/forgot-password': (_) => const ForgotPasswordScreen(),
+                '/reset-password': (_) => const ResetPasswordScreen(),
+                '/setup': (_) => const SetupScreen(),
+                '/budget': (_) => const BudgetScreen(),
+                '/home': (_) => const MainHomeScreen(),
+                '/notifications': (_) => const NotificationsScreen(),
+              },
+              home: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is Authenticated) {
+                    if (state.hasFinishedSetup) {
+                      return const MainHomeScreen();
+                    } else {
+                      return const SetupScreen();
+                    }
+                  }
+                  if (state is Unauthenticated || state is AuthFailure) {
+                    return const LoginScreen();
+                  }
+                  return const Scaffold(
+                    backgroundColor: AppColors.navyDark,
+                    body: Center(child: CircularProgressIndicator(color: AppColors.primaryEmerald)),
+                  );
+                },
+              ),
+            );
           },
-          home: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state is Authenticated) {
-                if (state.hasFinishedSetup) {
-                  return const MainHomeScreen();
-                } else {
-                  return const SetupScreen();
-                }
-              }
-              if (state is Unauthenticated || state is AuthFailure) {
-                return const LoginScreen();
-              }
-              return const Scaffold(
-                backgroundColor: AppColors.navyDark,
-                body: Center(child: CircularProgressIndicator(color: AppColors.primaryEmerald)),
-              );
-            },
-          )
         ),
       ),
     );
