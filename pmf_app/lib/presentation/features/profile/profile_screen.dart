@@ -454,6 +454,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildLanguageOption(String language) {
     final isSelected = _selectedLanguage == language;
+    final labelColor = isSelected ? AppColors.primaryEmerald : AppColors.navyDark;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -478,7 +479,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               language,
               style: TextStyle(
                 fontSize: 14,
-                color: isSelected ? AppColors.primaryEmerald : AppTheme.getTextPrimaryColor(context),
+                color: labelColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

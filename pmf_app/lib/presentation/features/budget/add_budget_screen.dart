@@ -7,7 +7,12 @@ import 'package:pmf_app/core/constants/app_colors.dart';
 import 'package:pmf_app/core/theme/app_theme.dart';
 
 class AddBudgetScreen extends StatefulWidget {
-  const AddBudgetScreen({super.key});
+  final DateTime selectedMonth;
+
+  AddBudgetScreen({
+    super.key,
+    DateTime? selectedMonth,
+  }) : selectedMonth = selectedMonth ?? DateTime.now();
 
   @override
   State<AddBudgetScreen> createState() => _AddBudgetScreenState();
@@ -193,7 +198,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Create a monthly budget allocation for a category.',
+                  'Create budget allocation for ${_getMonthYear(widget.selectedMonth)}',
                   style: TextStyle(
                     color: isDark ? Colors.white70 : AppColors.textSecondary,
                     height: 1.4,
@@ -209,7 +214,6 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
   }
 
   Widget _buildInputCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = AppTheme.getSurfaceColor(context);
     return Container(
       width: double.infinity,
@@ -321,10 +325,15 @@ class _AddBudgetScreenState extends State<AddBudgetScreen>
           AddBudgetCategoryEvent(
             name: name,
             limitAmount: limit,
-            month: DateTime.now(),
+            month: widget.selectedMonth,
           ),
         );
 
     Navigator.pop(context);
+  }
+
+  String _getMonthYear(DateTime date) {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return '${months[date.month - 1]} ${date.year}';
   }
 }

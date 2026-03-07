@@ -5,12 +5,14 @@ class BudgetModel {
   final String categoryName;
   final double limitAmount;
   final double spentAmount;
+  final DateTime? monthYear;
 
   BudgetModel({
     required this.categoryId,
     required this.categoryName,
     required this.limitAmount,
     this.spentAmount = 0.0,
+    this.monthYear,
   });
 
   double get remainingAmount => limitAmount - spentAmount;

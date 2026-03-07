@@ -18,11 +18,14 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class _BudgetScreenState extends State<BudgetScreen> {
+  late DateTime _selectedMonth;
+
   @override
   void initState() {
     super.initState();
+    _selectedMonth = DateTime.now();
     // Fetch budgets for current month
-    context.read<BudgetBloc>().add(FetchBudgetsEvent(DateTime.now()));
+    context.read<BudgetBloc>().add(FetchBudgetsEvent(_selectedMonth));
   }
 
   @override
@@ -128,6 +131,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
+              _buildMonthSelector(),
+              const SizedBox(height: 20),
               _buildTotalCard(state),
               const SizedBox(height: 30),
               Row(
@@ -158,6 +163,168 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMonthSelector() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.getSurfaceColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primaryEmerald.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios, size: 18),
+            color: AppColors.primaryEmerald,
+            onPressed: () {
+              setState(() {
+                _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+              });
+              context.read<BudgetBloc>().add(FetchBudgetsEvent(_selectedMonth));
+            },
+          ),
+          Expanded(
+            child: Center(
+              child: GestureDetector(
+                onTap: () => _selectMonth(context),
+                child: Text(
+                  _getMonthYear(_selectedMonth),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.getTextPrimaryColor(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_ios, size: 18),
+            color: AppColors.primaryEmerald,
+            onPressed: () {
+              setState(() {
+                _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+              });
+              context.read<BudgetBloc>().add(FetchBudgetsEvent(_selectedMonth));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMonthYear(DateTime date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.year}';
+  }
+
+  Future<void> _selectMonth(BuildContext context) async {
+    final picked = await _showMonthYearPicker(context, _selectedMonth);
+    if (picked != null) {
+      setState(() {
+        _selectedMonth = DateTime(picked.year, picked.month);
+      });
+      context.read<BudgetBloc>().add(FetchBudgetsEvent(_selectedMonth));
+    }
+  }
+
+  Future<DateTime?> _showMonthYearPicker(
+    BuildContext context,
+    DateTime initialDate,
+  ) {
+    final monthNames = const [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final currentYear = DateTime.now().year;
+    final years = List<int>.generate(16, (index) => 2020 + index)
+        .where((year) => year <= currentYear + 5)
+        .toList();
+
+    int selectedYear = initialDate.year;
+    int selectedMonth = initialDate.month;
+
+    return showDialog<DateTime>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Select month'),
+              content: SizedBox(
+                width: 320,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      value: years.contains(selectedYear) ? selectedYear : years.last,
+                      items: years
+                          .map(
+                            (year) => DropdownMenuItem<int>(
+                              value: year,
+                              child: Text(year.toString()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedYear = value);
+                        }
+                      },
+                      decoration: const InputDecoration(labelText: 'Year'),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(12, (index) {
+                        final month = index + 1;
+                        final isSelected = month == selectedMonth;
+                        return ChoiceChip(
+                          label: Text(monthNames[index]),
+                          selected: isSelected,
+                          onSelected: (_) {
+                            setDialogState(() => selectedMonth = month);
+                          },
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(
+                    dialogContext,
+                    DateTime(selectedYear, selectedMonth),
+                  ),
+                  child: const Text('Apply'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -481,7 +648,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: context.read<BudgetBloc>(),
-          child: const AddBudgetScreen(),
+          child: AddBudgetScreen(selectedMonth: _selectedMonth),
         ),
       ),
     );
